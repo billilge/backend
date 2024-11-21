@@ -7,8 +7,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.util.UriComponentsBuilder
-import site.billilge.api.backend.domain.member.entity.Member
-import site.billilge.api.backend.domain.member.repository.MemberRepository
+import site.billilge.api.backend.domain.member.service.MemberService
 import site.billilge.api.backend.global.security.jwt.TokenProvider
 import java.time.Duration
 import java.util.regex.Pattern
@@ -17,7 +16,7 @@ import java.util.regex.Pattern
 class OAuth2AuthenticationSuccessHandler(
     private val tokenProvider: TokenProvider,
 
-    private val memberRepository: MemberRepository,
+    private val memberService: MemberService,
 
     @Value("\${login.redirect.url}")
     private val redirectUrl: String
@@ -31,9 +30,7 @@ class OAuth2AuthenticationSuccessHandler(
             return
         }
 
-        val member = memberRepository.findByEmail(email)
-            ?: Member(email = email)
-                .also { memberRepository.save(it) }
+        val member = memberService.getOrCreateMember(email)
 
         val isNewUser = member.name.isNullOrEmpty()
 
