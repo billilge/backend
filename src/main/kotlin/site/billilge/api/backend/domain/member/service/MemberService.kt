@@ -10,6 +10,10 @@ class MemberService(
 ) {
     fun getOrCreateMember(email: String): Member {
         return memberRepository.findByEmail(email)
-            ?: Member(email = email).also { memberRepository.save(it) }
+            ?: Member(
+                email = email,
+                studentId = 20211234,
+                name = "황수민"
+            ).also { memberRepository.save(it) }
     }
 }
