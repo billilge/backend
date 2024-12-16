@@ -9,20 +9,20 @@ import java.time.Instant
 @RestControllerAdvice
 class GlobalExceptionHandler {
     @ExceptionHandler
-    fun handleApiException(exception: ApiException): ResponseEntity<ErrorResponseDTO> {
+    fun handleApiException(exception: ApiException): ResponseEntity<ErrorResponse> {
         val errorCode = exception.errorCode
-        val errorResponseDTO = ErrorResponseDTO.create(errorCode, Instant.now())
+        val errorResponse = ErrorResponse.create(errorCode, Instant.now())
         val httpStatus = errorCode.httpStatus
 
-        return ResponseEntity(errorResponseDTO, httpStatus)
+        return ResponseEntity(errorResponse, httpStatus)
     }
 
     @ExceptionHandler
-    fun handleDefaultException(exception: Exception): ResponseEntity<ErrorResponseDTO> {
-        val errorResponseDTO = ErrorResponseDTO.create(exception, Instant.now())
+    fun handleDefaultException(exception: Exception): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse.create(exception, Instant.now())
 
         exception.printStackTrace()
 
-        return ResponseEntity(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }

@@ -2,7 +2,7 @@ package site.billilge.api.backend.global.exception
 
 import java.time.Instant
 
-data class ErrorResponseDTO(
+data class ErrorResponse(
     val code: String,
     val message: String,
     val status: Int,
@@ -10,8 +10,8 @@ data class ErrorResponseDTO(
 ) {
     companion object {
         @JvmStatic
-        fun create(errorCode: ErrorCode, now: Instant): ErrorResponseDTO {
-            return ErrorResponseDTO(
+        fun create(errorCode: ErrorCode, now: Instant): ErrorResponse {
+            return ErrorResponse(
                 code = errorCode.name,
                 message = errorCode.message,
                 status = errorCode.httpStatus.value(),
@@ -20,10 +20,10 @@ data class ErrorResponseDTO(
         }
 
         @JvmStatic
-        fun create(exception: Exception, now: Instant): ErrorResponseDTO {
+        fun create(exception: Exception, now: Instant): ErrorResponse {
             val errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR
 
-            return ErrorResponseDTO(
+            return ErrorResponse(
                 code = errorCode.name,
                 message = exception.message ?: errorCode.message,
                 status = errorCode.httpStatus.value(),

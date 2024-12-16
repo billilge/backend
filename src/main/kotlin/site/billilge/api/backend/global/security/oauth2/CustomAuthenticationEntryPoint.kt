@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
-import site.billilge.api.backend.global.exception.ErrorResponseDTO
+import site.billilge.api.backend.global.exception.ErrorResponse
 import java.time.Instant
 
 //안쓰는 클래스 22
@@ -19,7 +19,7 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         val objectMapper = ObjectMapper()
         response.status = HttpServletResponse.SC_UNAUTHORIZED // 401 Unauthorized
         response.contentType = MediaType.APPLICATION_JSON_VALUE
-        val error: ErrorResponseDTO = ErrorResponseDTO.create(exception, Instant.now())
+        val error: ErrorResponse = ErrorResponse.create(exception, Instant.now())
         response.writer.write(objectMapper.writeValueAsString(error))
     }
 }
