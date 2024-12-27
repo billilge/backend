@@ -19,7 +19,10 @@ class RentalHistory(
     @ManyToOne
     val item: Item,
     @Column(name = "rental_status", nullable = false)
-    val rentalStatus: RentalStatus
+    val rentalStatus: RentalStatus,
+    @JoinColumn(name = "worker_id", nullable = false)
+    @ManyToOne
+    val worker: Member,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
