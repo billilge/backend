@@ -8,4 +8,5 @@ enum class GlobalErrorCode(
 ): ErrorCode {
     INTERNAL_SERVER_ERROR("내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_AUTHORIZATION_HEADER("유효하지 않은 Authorization 헤더입니다.", HttpStatus.BAD_REQUEST),
+    FORBIDDEN("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
 }

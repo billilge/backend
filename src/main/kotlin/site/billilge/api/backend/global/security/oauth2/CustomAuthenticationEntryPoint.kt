@@ -19,7 +19,7 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         val objectMapper = ObjectMapper()
         response.status = HttpServletResponse.SC_UNAUTHORIZED // 401 Unauthorized
         response.contentType = MediaType.APPLICATION_JSON_VALUE
-        val error: ErrorResponse = ErrorResponse.create(exception, Instant.now())
+        val error: ErrorResponse = ErrorResponse.from(exception, Instant.now())
         response.writer.write(objectMapper.writeValueAsString(error))
     }
 }
