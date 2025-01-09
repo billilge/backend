@@ -10,7 +10,7 @@ data class ErrorResponse(
 ) {
     companion object {
         @JvmStatic
-        fun create(errorCode: ErrorCode, now: Instant): ErrorResponse {
+        fun from(errorCode: ErrorCode, now: Instant): ErrorResponse {
             return ErrorResponse(
                 code = errorCode.name,
                 message = errorCode.message,
@@ -20,7 +20,7 @@ data class ErrorResponse(
         }
 
         @JvmStatic
-        fun create(exception: Exception, now: Instant): ErrorResponse {
+        fun from(exception: Exception, now: Instant): ErrorResponse {
             val errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR
 
             return ErrorResponse(

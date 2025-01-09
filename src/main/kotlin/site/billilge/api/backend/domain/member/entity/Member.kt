@@ -30,6 +30,7 @@ class Member(
     val id: Long? = null
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     var department: Department = Department.SW
         protected set
 

@@ -13,8 +13,6 @@ class UserAuthInfo: OAuth2User, UserDetails {
     constructor(oAuth2User: OAuth2User) {
         authorities.addAll(oAuth2User.authorities)
         attributes.putAll(oAuth2User.attributes)
-//        println("attributes: $attributes")
-//        println("email: ${attributes["email"]}")
     }
 
     constructor(member: Member) {
