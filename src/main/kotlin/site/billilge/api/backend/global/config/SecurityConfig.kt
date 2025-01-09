@@ -1,5 +1,6 @@
 package site.billilge.api.backend.global.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.Customizer
@@ -26,6 +27,8 @@ class SecurityConfig (
     private val customOAuth2UserService: CustomOAuth2UserService,
     private val oAuth2AuthenticationSuccessHandler: OAuth2AuthenticationSuccessHandler,
     private val oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler,
+    @Value("\${cors.allowed-origins}")
+    private val allowedOrigins: Array<String>,
 ) {
     @Bean
     fun tokenAuthenticationFilter(): TokenAuthenticationFilter {
@@ -69,7 +72,7 @@ class SecurityConfig (
     @Bean
     fun apiConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("*")
+        configuration.allowedOrigins = allowedOrigins.toList()
         configuration.allowedMethods = mutableListOf("GET", "POST", "PATCH", "PUT", "DELETE")
         configuration.allowedHeaders = mutableListOf("Content-Type", "Authorization")
 
