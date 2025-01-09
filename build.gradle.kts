@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.3.5"
+    id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("plugin.jpa") version "1.9.25"
 }
@@ -36,7 +36,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
     implementation("org.glassfish.jaxb:jaxb-runtime:2.3.2")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0") // swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1") // swagger
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
