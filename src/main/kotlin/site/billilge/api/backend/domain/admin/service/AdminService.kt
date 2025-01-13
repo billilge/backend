@@ -11,11 +11,14 @@ import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.global.exception.ApiException
+import site.billilge.api.backend.global.exception.GlobalErrorCode
+import site.billilge.api.backend.global.external.s3.S3Service
 
 @Service
 @Transactional(readOnly = true)
 class AdminService(
-    private val itemRepository: ItemRepository
+    private val itemRepository: ItemRepository,
+    private val s3Service: S3Service,
 ) {
     fun getAllItems(): ItemFindAllResponse {
         val itemDetails = itemRepository.findAll()
@@ -30,7 +33,9 @@ class AdminService(
         if (itemRepository.existsByName(itemRequest.name))
             throw ApiException(AdminErrorCode.ITEM_NAME_ALREADY_EXISTS)
 
-        val imageUrl = "dummy"
+        val imageUrl = s3Service.uploadImageFile(image)
+            ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
+
         val type = if (itemRequest.isConsumption) ItemType.CONSUMPTION else ItemType.RENTAL
 
         val newItem = Item(
@@ -47,7 +52,8 @@ class AdminService(
     fun updateItem(image: MultipartFile?, itemId: Long, itemRequest: ItemRequest) {
         val item = itemRepository.findById(itemId)
             .orElseThrow { ApiException(AdminErrorCode.ITEM_NOT_FOUND) }
-        val imageUrl = image.toString()
+        val imageUrl = image?.let { s3Service.uploadImageFile(it) }
+            ?: item.imageUrl
         val type = if (itemRequest.isConsumption) ItemType.CONSUMPTION else ItemType.RENTAL
 
         item.update(
