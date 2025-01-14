@@ -71,4 +71,25 @@ interface AdminApi {
         @RequestPart image: MultipartFile?,
         @RequestPart itemRequest: ItemRequest
     ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "대여 물품 삭제",
+        description = "대여 물품을 삭제하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "204",
+                description = "대여 물품 삭제 성공"
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "물품 정보가 존재하지 않습니다.",
+                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+            )
+        ]
+    )
+    fun deleteItem(
+        @PathVariable itemId: Long,
+    ): ResponseEntity<Void>
 }

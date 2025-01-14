@@ -40,4 +40,10 @@ class AdminController(
         adminService.updateItem(image, itemId, itemRequest)
         return ResponseEntity.ok().build()
     }
+
+    @DeleteMapping("/items/{itemId}")
+    override fun deleteItem(@PathVariable itemId: Long): ResponseEntity<Void> {
+        adminService.deleteItem(itemId)
+        return ResponseEntity.noContent().build()
+    }
 }
