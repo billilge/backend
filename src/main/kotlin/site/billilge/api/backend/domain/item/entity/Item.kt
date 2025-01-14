@@ -7,15 +7,22 @@ import site.billilge.api.backend.domain.item.enums.ItemType
 @Table(name = "item")
 class Item(
     @Column(nullable = false)
-    val name: String,
+    var name: String,
     @Column(nullable = false)
-    val type: ItemType,
+    var type: ItemType,
     @Column(nullable = false)
-    val count: Int,
+    var count: Int,
     @Column(name = "image_url", nullable = true)
-    val imageUrl: String,
+    var imageUrl: String,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Long? = null
+    val id: Long? = null
+
+    fun update(name: String, type: ItemType, count: Int, imageUrl: String?) {
+        this.name = name
+        this.type = type
+        this.count = count
+        imageUrl?.let { this.imageUrl = it }
+    }
 }
