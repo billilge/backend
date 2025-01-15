@@ -27,7 +27,6 @@ class AdminService(
         return ItemFindAllResponse(itemDetails)
     }
 
-    //TODO: 아이템 이미지 S3에 업로드하도록 구현하기
     @Transactional
     fun addItem(image: MultipartFile, itemRequest: ItemRequest) {
         if (itemRepository.existsByName(itemRequest.name))
@@ -62,5 +61,29 @@ class AdminService(
             count = itemRequest.count,
             imageUrl = imageUrl,
         )
+    }
+
+    @Transactional
+    fun deleteItem(itemId: Long): Boolean {
+        val item = itemRepository.findById(itemId)
+            .orElseThrow { ApiException(AdminErrorCode.ITEM_NOT_FOUND) }
+
+        val imageUrl = item.imageUrl
+        var isEntityDeleted: Boolean
+
+        try {
+            itemRepository.deleteById(itemId)
+            isEntityDeleted = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            isEntityDeleted = false
+        }
+
+        if (isEntityDeleted) {
+            s3Service.deleteImageFile(imageUrl)
+            return true
+        }
+
+        return false
     }
 }

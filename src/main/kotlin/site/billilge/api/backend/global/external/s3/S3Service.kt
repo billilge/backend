@@ -15,7 +15,9 @@ import java.util.*
 class S3Service(
     private val amazonS3: AmazonS3,
     @Value("\${cloud.aws.s3.bucket}")
-    val bucket: String
+    val bucket: String,
+    @Value("\${cloud.aws.s3.base-url}")
+    val baseUrl: String
 ) {
     fun uploadImageFile(imageFile: MultipartFile, newFileName: String = "items/${UUID.randomUUID()}"): String? {
         val originalName = imageFile.originalFilename ?: return null
@@ -37,5 +39,19 @@ class S3Service(
         }
 
         return amazonS3.getUrl(bucket, changedName).toString()
+    }
+
+    fun deleteImageFile(imageUrl: String) {
+        val imageKey = imageUrl.replace(baseUrl, "")
+
+        if (!amazonS3.doesObjectExist(bucket, imageKey)) {
+            throw ApiException(GlobalErrorCode.IMAGE_NOT_FOUND)
+        }
+
+        try {
+            amazonS3.deleteObject(bucket, imageKey)
+        } catch (e: IOException) {
+            throw ApiException(GlobalErrorCode.IMAGE_DELETE_FAILED, e)
+        }
     }
 }
