@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import site.billilge.api.backend.domain.admin.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.global.exception.ErrorResponse
@@ -92,4 +93,37 @@ interface AdminApi {
     fun deleteItem(
         @PathVariable itemId: Long,
     ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "관리자 목록 조회",
+        description = "관리자 목록을 조회하는 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "관리자 목록 조회 성공"
+            )
+        ]
+    )
+    fun getAdminList(): ResponseEntity<AdminFindAllResponse>
+
+    @Operation(
+        summary = "회원 권한 변경",
+        description = "회원의 권한(사용자/관리자)을 변경하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "회원이 사용자라면 관리자로, 관리자라면 사용자로 권한 변경 성공"
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "회원을 찾을 수 없습니다.",
+                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+            )
+        ]
+    )
+    fun updateMemberRole(@PathVariable memberId: Long): ResponseEntity<Void>
 }

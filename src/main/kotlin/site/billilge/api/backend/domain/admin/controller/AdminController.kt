@@ -5,6 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import site.billilge.api.backend.domain.admin.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.admin.service.AdminService
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
@@ -45,5 +46,16 @@ class AdminController(
     override fun deleteItem(@PathVariable itemId: Long): ResponseEntity<Void> {
         adminService.deleteItem(itemId)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/members/admins")
+    override fun getAdminList(): ResponseEntity<AdminFindAllResponse> {
+        return ResponseEntity.ok(adminService.getAdminList())
+    }
+
+    @PatchMapping("/members/roles/{memberId}")
+    override fun updateMemberRole(@PathVariable memberId: Long): ResponseEntity<Void> {
+        adminService.updateMemberRole(memberId)
+        return ResponseEntity.ok().build();
     }
 }
