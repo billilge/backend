@@ -3,6 +3,8 @@ package site.billilge.api.backend.domain.admin.service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import site.billilge.api.backend.domain.admin.dto.response.AdminFindAllResponse
+import site.billilge.api.backend.domain.admin.dto.response.AdminMemberDetail
 import site.billilge.api.backend.domain.admin.exception.AdminErrorCode
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
@@ -10,6 +12,9 @@ import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.item.repository.ItemRepository
+import site.billilge.api.backend.domain.member.enums.Role
+import site.billilge.api.backend.domain.member.exception.MemberErrorCode
+import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import site.billilge.api.backend.global.external.s3.S3Service
@@ -17,6 +22,7 @@ import site.billilge.api.backend.global.external.s3.S3Service
 @Service
 @Transactional(readOnly = true)
 class AdminService(
+    private val memberRepository: MemberRepository,
     private val itemRepository: ItemRepository,
     private val s3Service: S3Service,
 ) {
@@ -85,5 +91,25 @@ class AdminService(
         }
 
         return false
+    }
+
+    //TODO: QueryDSL 도입할 때 필터링 부분 비즈니스 로직에서 제외하기
+    fun getAdminList(): AdminFindAllResponse {
+        val adminDetails = memberRepository.findAll()
+            .filter { it.role == Role.ADMIN }
+            .map { AdminMemberDetail.from(it) }
+            .toList()
+
+        return AdminFindAllResponse(adminDetails)
+    }
+
+    @Transactional
+    fun updateMemberRole(memberId: Long) {
+        val member = memberRepository.findById(memberId)
+            .orElseThrow { ApiException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        val newRole = if (member.role == Role.ADMIN) Role.USER else Role.ADMIN
+
+        member.updateRole(newRole)
     }
 }
