@@ -19,6 +19,7 @@ class RentalHistory(
     @ManyToOne
     val item: Item,
     @Column(name = "rental_status", nullable = false)
+    @Enumerated(EnumType.STRING)
     val rentalStatus: RentalStatus,
     @JoinColumn(name = "worker_id", nullable = false)
     @ManyToOne
