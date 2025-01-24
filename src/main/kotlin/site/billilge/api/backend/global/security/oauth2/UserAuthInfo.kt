@@ -9,6 +9,7 @@ import site.billilge.api.backend.domain.member.entity.Member
 class UserAuthInfo: OAuth2User, UserDetails {
     private val authorities = mutableListOf<GrantedAuthority>()
     private var attributes = hashMapOf<String, Any?>()
+    private var memberId: Long? = null
 
     constructor(oAuth2User: OAuth2User) {
         authorities.addAll(oAuth2User.authorities)
@@ -17,10 +18,13 @@ class UserAuthInfo: OAuth2User, UserDetails {
 
     constructor(member: Member) {
         authorities.add(SimpleGrantedAuthority(member.role.key))
+        memberId = member.id
     }
 
     val email
         get() = attributes["email"] as? String ?: ""
+
+    fun getMemberId(): Long? = memberId
 
     override fun getName(): String? = attributes["name"] as String?
 
