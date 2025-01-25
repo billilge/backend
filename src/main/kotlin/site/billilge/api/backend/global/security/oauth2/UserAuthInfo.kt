@@ -9,22 +9,23 @@ import site.billilge.api.backend.domain.member.entity.Member
 class UserAuthInfo: OAuth2User, UserDetails {
     private val authorities = mutableListOf<GrantedAuthority>()
     private var attributes = hashMapOf<String, Any?>()
-    private var memberId: Long? = null
+    private var memberId: Long
 
     constructor(oAuth2User: OAuth2User) {
         authorities.addAll(oAuth2User.authorities)
         attributes.putAll(oAuth2User.attributes)
+        this.memberId = attributes["id"]?.toString()?.toLongOrNull() ?: 0L
     }
 
     constructor(member: Member) {
         authorities.add(SimpleGrantedAuthority(member.role.key))
-        memberId = member.id
+        this.memberId = member.id ?: throw IllegalArgumentException("Member ID cannot be null")
     }
 
     val email
         get() = attributes["email"] as? String ?: ""
 
-    fun getMemberId(): Long? = memberId
+    fun getMemberId(): Long = memberId
 
     override fun getName(): String? = attributes["name"] as String?
 
