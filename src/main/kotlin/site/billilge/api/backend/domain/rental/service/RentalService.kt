@@ -5,10 +5,12 @@ import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
+import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
 import site.billilge.api.backend.domain.rental.dto.response.RentalStatusResponse
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
+import site.billilge.api.backend.domain.rental.mapper.toDto
 import site.billilge.api.backend.domain.rental.repository.RentalRepository
 import site.billilge.api.backend.global.exception.ApiException
 
@@ -45,4 +47,10 @@ class RentalService(
         itemId = itemId,
         isRented = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(itemId, memberId, RentalStatus.RENTAL).isPresent
     )
+
+    fun getMemberRentalHistory(memberId: Long, rentalStatus: RentalStatus): List<RentalHistoryDetail>{
+        val rentalHistories = rentalRepository.findByMemberIdAndRentalStatus(memberId, rentalStatus)
+
+        return rentalHistories.map { it.toDto() }
+    }
 }

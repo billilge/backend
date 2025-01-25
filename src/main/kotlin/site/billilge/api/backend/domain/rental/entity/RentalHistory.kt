@@ -31,7 +31,7 @@ class RentalHistory(
     val rentAt: Instant,
 
     @Column(name = "returned_at", nullable = true)
-    val returnedAt: Instant,
+    val returnedAt: Instant? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,7 +5,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
+import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
 import site.billilge.api.backend.domain.rental.dto.response.RentalStatusResponse
+import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.service.RentalService
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
@@ -32,5 +34,14 @@ class RentalController(
     ): ResponseEntity<RentalStatusResponse> {
         val memberId = userAuthInfo.getMemberId()
         return ResponseEntity.ok(rentalService.getRentalStatus(memberId, itemId))
+    }
+
+    @GetMapping
+    override fun getMemberRentalHistory(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @RequestParam rentalStatus: RentalStatus
+    ) : ResponseEntity<List<RentalHistoryDetail>> {
+        val memberId = userAuthInfo.getMemberId()
+        return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
     }
 }

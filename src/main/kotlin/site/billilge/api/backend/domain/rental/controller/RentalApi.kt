@@ -8,8 +8,11 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
+import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
 import site.billilge.api.backend.domain.rental.dto.response.RentalStatusResponse
+import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
 @Tag(name = "Rental", description = "대여 API")
@@ -46,4 +49,21 @@ interface RentalApi {
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @PathVariable itemId: Long
     ): ResponseEntity<RentalStatusResponse>
+
+    @Operation(
+        summary = "본인의 대여 기록 조회",
+        description = "대여 상태 별로 본인의 대여 기록을 조회하는 API"
+    )
+    @ApiResponses(
+        value =  [
+            ApiResponse(
+                responseCode = "200",
+                description = "대여 목록 조회 완료"
+            )
+        ]
+    )
+    fun getMemberRentalHistory(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @RequestParam rentalStatus: RentalStatus)
+    : ResponseEntity<List<RentalHistoryDetail>>
 }

@@ -7,4 +7,5 @@ import java.util.*
 
 interface RentalRepository: JpaRepository<RentalHistory, Long> {
     fun findByItemIdAndMemberIdAndRentalStatus(itemId:Long, memberId: Long, rentalStatus: RentalStatus): Optional<RentalHistory>
+    fun findByMemberIdAndRentalStatus(memberId: Long, rentalStatus: RentalStatus): List<RentalHistory>
 }
