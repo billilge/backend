@@ -5,7 +5,7 @@ import site.billilge.api.backend.domain.member.entity.Member
 data class AdminMemberDetail(
     val memberId: Long,
     val name: String,
-    val studentId: Int
+    val studentId: String
 ) {
     companion object {
         @JvmStatic

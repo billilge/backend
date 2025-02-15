@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
+import java.util.*
 
 class TokenAuthenticationFilter(
     private val tokenProvider: TokenProvider
@@ -23,6 +24,12 @@ class TokenAuthenticationFilter(
         }
 
         filterChain.doFilter(request, response)
+    }
+
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        val excludes = arrayOf("/auth/")
+        val path = request.requestURI
+        return excludes.any { path.startsWith(it) }
     }
 
     private fun getAccessToken(authorizationHeader: String): String {
