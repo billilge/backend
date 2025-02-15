@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.admin.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
+import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
+import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.global.exception.ErrorResponse
 
 @Tag(name = "Admin", description = "관리자 API")
@@ -126,4 +128,36 @@ interface AdminApi {
         ]
     )
     fun updateMemberRole(@PathVariable memberId: Long): ResponseEntity<Void>
+
+    @Operation(
+        summary = "학생회비 납부자 추가",
+        description = "학생회비 납부자 데이터를 추가하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "학생회비 납부자 데이터 추가 성공"
+            )
+        ]
+    )
+    fun addPayers(@RequestBody request: PayerRequest): ResponseEntity<Void>
+
+    @Operation(
+        summary = "학생회비 납부자 목록 조회",
+        description = "학생회비 납부자 목록을 전체 혹은 페이지별로 조회하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "학생회비 납부자 목록 조회 성공"
+            )
+        ]
+    )
+    fun getAllPayers(
+        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
+        @RequestParam(required = false, defaultValue = "10") size: Int,
+        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
+    ): ResponseEntity<PayerFindAllResponse>
 }
