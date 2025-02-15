@@ -12,9 +12,6 @@ import java.time.LocalDateTime
 @Table(name = "member")
 @EntityListeners(AuditingEntityListener::class)
 class Member(
-    @Column(name = "email")
-    val email: String?,
-
     @Column(name = "name", nullable = false)
     val name: String,
 
@@ -28,6 +25,10 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
     val id: Long? = null
+
+    @Column(name = "email")
+    var email: String? = null
+        protected set
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -53,7 +54,7 @@ class Member(
         this.role = role
     }
 
-    fun updateDepartment(department: Department) {
-        this.department = department
+    fun updateEmail(email: String) {
+        this.email = email
     }
 }

@@ -5,6 +5,10 @@ import site.billilge.api.backend.domain.member.entity.Member
 
 interface MemberRepository: JpaRepository<Member, Long> {
     fun findByEmail(email: String): Member?
+
     fun findByStudentId(studentId: String): Member?
+
     fun existsByEmail(email: String): Boolean
+
+    fun existsByStudentIdAndName(studentId: String, name: String): Boolean
 }
