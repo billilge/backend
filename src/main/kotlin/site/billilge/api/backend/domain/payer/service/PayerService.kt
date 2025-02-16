@@ -86,8 +86,15 @@ class PayerService(
 
     @Transactional
     fun deletePayers(request: PayerDeleteRequest) {
-        request.payerIds.forEach { payerId ->
-            payerRepository.deleteById(payerId)
-        }
+        val payerStudentIds = payerRepository.findAllByIds(request.payerIds)
+            .mapNotNull { it.studentId }
+            .toList()
+
+        memberRepository.findAllByStudentIds(payerStudentIds)
+            .forEach { member ->
+                member.isFeePaid = false
+            }
+
+        payerRepository.deleteAllById(request.payerIds)
     }
 }

@@ -21,4 +21,7 @@ interface MemberRepository: JpaRepository<Member, Long> {
 
     @Query("select m from Member m where m.id in :ids")
     fun findAllByIds(@Param("ids") ids: List<Long>): List<Member>
+
+    @Query("select m from Member m where m.studentId in :ids")
+    fun findAllByStudentIds(@Param("studentIds") studentIds: List<String>): List<Member>
 }
