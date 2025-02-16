@@ -3,6 +3,8 @@ package site.billilge.api.backend.domain.member.service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
+import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
+import site.billilge.api.backend.domain.member.dto.response.AdminMemberDetail
 import site.billilge.api.backend.domain.member.dto.response.SignUpResponse
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
@@ -52,5 +54,14 @@ class MemberService(
         val accessToken = tokenProvider.generateToken(member, Duration.ofDays(30))
 
         return SignUpResponse(accessToken)
+    }
+
+    fun getAdminList(): AdminFindAllResponse {
+        val adminDetails = memberRepository.findAll()
+            .filter { it.role == Role.ADMIN }
+            .map { AdminMemberDetail.from(it) }
+            .toList()
+
+        return AdminFindAllResponse(adminDetails)
     }
 }
