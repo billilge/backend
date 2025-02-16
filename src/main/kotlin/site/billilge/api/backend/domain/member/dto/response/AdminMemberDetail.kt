@@ -1,4 +1,4 @@
-package site.billilge.api.backend.domain.admin.dto.response
+package site.billilge.api.backend.domain.member.dto.response
 
 import site.billilge.api.backend.domain.member.entity.Member
 

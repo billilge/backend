@@ -8,4 +8,6 @@ enum class ItemErrorCode(
     override val httpStatus: HttpStatus
 ): ErrorCode {
     ITEM_ID_IS_NULL("물품의 ID를 가져올 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    ITEM_NAME_ALREADY_EXISTS("이미 존재하는 물품 이름입니다.", HttpStatus.BAD_REQUEST),
+    ITEM_NOT_FOUND("물품 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 }
