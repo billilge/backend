@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 
@@ -44,4 +45,17 @@ interface AdminPayerApi {
         @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
     ): ResponseEntity<PayerFindAllResponse>
 
+    @Operation(
+        summary = "학생회비 납부자 삭제",
+        description = "학생회비 납부자를 삭제하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "204",
+                description = "학생회비 납부자 삭제 성공"
+            )
+        ]
+    )
+    fun deletePayers(@RequestBody request: PayerDeleteRequest): ResponseEntity<Void>
 }
