@@ -9,6 +9,8 @@ import site.billilge.api.backend.domain.admin.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.admin.service.AdminService
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
+import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
+import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 
 @RestController
@@ -57,5 +59,20 @@ class AdminController(
     override fun updateMemberRole(@PathVariable memberId: Long): ResponseEntity<Void> {
         adminService.updateMemberRole(memberId)
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/members/payers")
+    override fun getAllPayers(
+        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
+        @RequestParam(required = false, defaultValue = "10") size: Int,
+        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
+    ): ResponseEntity<PayerFindAllResponse> {
+        return ResponseEntity.ok(adminService.getAllPayers(pageNo, size, criteria))
+    }
+
+    @PostMapping("/members/payers")
+    override fun addPayers(@RequestBody request: PayerRequest): ResponseEntity<Void> {
+        adminService.addPayers(request)
+        return ResponseEntity.ok().build()
     }
 }

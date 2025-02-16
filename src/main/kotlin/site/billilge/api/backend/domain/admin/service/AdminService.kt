@@ -1,5 +1,7 @@
 package site.billilge.api.backend.domain.admin.service
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -15,6 +17,12 @@ import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
+import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
+import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
+import site.billilge.api.backend.domain.payer.dto.response.PayerSummary
+import site.billilge.api.backend.domain.payer.entity.Payer
+import site.billilge.api.backend.domain.payer.repository.PayerRepository
+import site.billilge.api.backend.domain.payer.service.PayerService
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import site.billilge.api.backend.global.external.s3.S3Service
@@ -24,7 +32,9 @@ import site.billilge.api.backend.global.external.s3.S3Service
 class AdminService(
     private val memberRepository: MemberRepository,
     private val itemRepository: ItemRepository,
+    private val payerRepository: PayerRepository,
     private val s3Service: S3Service,
+    private val payerService: PayerService,
 ) {
     fun getAllItems(): ItemFindAllResponse {
         val itemDetails = itemRepository.findAll()
@@ -111,5 +121,36 @@ class AdminService(
         val newRole = if (member.role == Role.ADMIN) Role.USER else Role.ADMIN
 
         member.updateRole(newRole)
+    }
+
+    fun getAllPayers(pageNo: Int, size: Int, criteria: String): PayerFindAllResponse {
+        val pageRequest = PageRequest.of(pageNo, size, Sort.by(Sort.Direction.DESC, criteria))
+        val payers = payerRepository.findAll(pageRequest)
+            .map { PayerSummary.from(it) }
+            .toList()
+
+        return PayerFindAllResponse(payers)
+    }
+
+    @Transactional
+    fun addPayers(request: PayerRequest) {
+        request.payers.forEach { payerItem ->
+            val name = payerItem.name
+            val studentId = payerItem.studentId
+            val enrollmentYear = studentId.substring(0, 4)
+            val registered = memberRepository.existsByStudentIdAndName(studentId, name)
+
+            if (!payerService.isPayer(name, studentId)) {
+                val payer = Payer(
+                    name = name,
+                    enrollmentYear = enrollmentYear,
+                    studentId = studentId
+                ).apply {
+                    this.registered = registered
+                }
+
+                payerRepository.save(payer)
+            }
+        }
     }
 }
