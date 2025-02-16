@@ -80,8 +80,9 @@ class MemberService(
 
     @Transactional
     fun deleteAdmins(request: AdminRequest) {
-        request.memberIds.forEach { memberId ->
-            memberRepository.deleteById(memberId)
-        }
+        memberRepository.findAllByIds(request.memberIds)
+            .forEach { member ->
+                member.updateRole(Role.USER)
+            }
     }
 }
