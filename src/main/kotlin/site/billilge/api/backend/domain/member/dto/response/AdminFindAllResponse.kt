@@ -1,5 +1,6 @@
 package site.billilge.api.backend.domain.member.dto.response
 
 data class AdminFindAllResponse(
-    val admins: List<AdminMemberDetail>
+    val admins: List<AdminMemberDetail>,
+    val totalPage: Int
 )
