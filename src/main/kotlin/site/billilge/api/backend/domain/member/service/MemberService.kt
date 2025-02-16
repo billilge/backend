@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.AdminMemberDetail
@@ -67,5 +68,20 @@ class MemberService(
             .toList()
 
         return AdminFindAllResponse(adminDetails, totalPage)
+    }
+
+    @Transactional
+    fun addAdmins(request: AdminRequest) {
+        memberRepository.findAllByIds(request.memberIds)
+            .forEach { member ->
+                member.updateRole(Role.ADMIN)
+            }
+    }
+
+    @Transactional
+    fun deleteAdmins(request: AdminRequest) {
+        request.memberIds.forEach { memberId ->
+            memberRepository.deleteById(memberId)
+        }
     }
 }
