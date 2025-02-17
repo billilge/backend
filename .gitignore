@@ -40,3 +40,5 @@ out/
 .kotlin
 
 application-local.yml
+
+.DS_Store
