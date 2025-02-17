@@ -17,13 +17,12 @@ class AdminPayerController(
 ) : AdminPayerApi {
     @GetMapping
     override fun getAllPayers(
-        @ModelAttribute pageable: PageableCondition
+        @ModelAttribute pageableCondition: PageableCondition
 //        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
 //        @RequestParam(required = false, defaultValue = "10") size: Int,
 //        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
     ): ResponseEntity<PayerFindAllResponse> {
-        return ResponseEntity.ok(payerService.getAllPayers(pageable.pageNo, pageable
-            .size, pageable.criteria))
+        return ResponseEntity.ok(payerService.getAllPayers(pageableCondition))
     }
 
     @PostMapping

@@ -24,7 +24,7 @@ interface AdminMemberApi {
         ]
     )
     fun getAdminList(
-        @ModelAttribute pageable: PageableCondition,
+        @ModelAttribute pageableCondition: PageableCondition,
 //        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
 //        @RequestParam(required = false, defaultValue = "10") size: Int
     ): ResponseEntity<AdminFindAllResponse>

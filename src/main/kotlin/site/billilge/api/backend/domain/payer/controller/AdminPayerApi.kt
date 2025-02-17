@@ -41,7 +41,7 @@ interface AdminPayerApi {
         ]
     )
     fun getAllPayers(
-        pageable: PageableCondition
+        pageableCondition: PageableCondition
 //        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
 //        @RequestParam(required = false, defaultValue = "10") size: Int,
 //        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
