@@ -6,6 +6,7 @@ import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.service.MemberService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
+import site.billilge.api.backend.global.dto.PageableCondition
 
 @RestController
 @RequestMapping("admin/members")
@@ -15,10 +16,9 @@ class AdminMemberController(
 ) : AdminMemberApi {
     @GetMapping("/admins")
     override fun getAdminList(
-        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
-        @RequestParam(required = false, defaultValue = "10") size: Int
+        @ModelAttribute pageable: PageableCondition
     ): ResponseEntity<AdminFindAllResponse> {
-        return ResponseEntity.ok(memberService.getAdminList(pageNo, size))
+        return ResponseEntity.ok(memberService.getAdminList(pageable.pageNo, pageable.size))
     }
 
     @PostMapping("/admins")

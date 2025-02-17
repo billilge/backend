@@ -7,6 +7,7 @@ import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.domain.payer.service.PayerService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
+import site.billilge.api.backend.global.dto.PageableCondition
 
 @RestController
 @RequestMapping("/admin/members/payers")
@@ -16,11 +17,13 @@ class AdminPayerController(
 ) : AdminPayerApi {
     @GetMapping
     override fun getAllPayers(
-        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
-        @RequestParam(required = false, defaultValue = "10") size: Int,
-        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
+        @ModelAttribute pageable: PageableCondition
+//        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
+//        @RequestParam(required = false, defaultValue = "10") size: Int,
+//        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
     ): ResponseEntity<PayerFindAllResponse> {
-        return ResponseEntity.ok(payerService.getAllPayers(pageNo, size, criteria))
+        return ResponseEntity.ok(payerService.getAllPayers(pageable.pageNo, pageable
+            .size, pageable.criteria))
     }
 
     @PostMapping

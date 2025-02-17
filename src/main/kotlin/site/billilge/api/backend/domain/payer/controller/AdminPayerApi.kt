@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
+import site.billilge.api.backend.global.dto.PageableCondition
 
 @Tag(name = "(Admin) Payer", description = "관리자용 학생회비 납부자 API")
 interface AdminPayerApi {
@@ -40,9 +41,10 @@ interface AdminPayerApi {
         ]
     )
     fun getAllPayers(
-        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
-        @RequestParam(required = false, defaultValue = "10") size: Int,
-        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
+        pageable: PageableCondition
+//        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
+//        @RequestParam(required = false, defaultValue = "10") size: Int,
+//        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
     ): ResponseEntity<PayerFindAllResponse>
 
     @Operation(

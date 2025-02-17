@@ -53,13 +53,14 @@ class PayerService(
         payerResults[0].update(true, studentId)
     }
 
-    fun getAllPayers(pageNo: Int, size: Int, criteria: String): PayerFindAllResponse {
-        val pageRequest = PageRequest.of(pageNo, size, Sort.by(Sort.Direction.DESC, criteria))
+    fun getAllPayers(pageNo: Int, size: Int, criteria: String?): PayerFindAllResponse {
+        val pageRequest = PageRequest.of(pageNo, size, Sort.by(Sort.Direction.DESC, criteria ?: "enrollmentYear"))
         val payers = payerRepository.findAll(pageRequest)
+        val payerSummaries = payers
             .map { PayerSummary.from(it) }
             .toList()
 
-        return PayerFindAllResponse(payers)
+        return PayerFindAllResponse(payerSummaries, payers.totalPages)
     }
 
     @Transactional
