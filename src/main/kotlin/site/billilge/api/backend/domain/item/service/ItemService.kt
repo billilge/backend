@@ -7,7 +7,6 @@ import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.domain.item.entity.Item
-import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.item.exception.ItemErrorCode
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.global.exception.ApiException
@@ -32,14 +31,14 @@ class ItemService(
         if (itemRepository.existsByName(itemRequest.name))
             throw ApiException(ItemErrorCode.ITEM_NAME_ALREADY_EXISTS)
 
+        checkImageIsSvg(image)
+
         val imageUrl = s3Service.uploadImageFile(image)
             ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
 
-        val type = if (itemRequest.isConsumption) ItemType.CONSUMPTION else ItemType.RENTAL
-
         val newItem = Item(
             name = itemRequest.name,
-            type = type,
+            type = itemRequest.type,
             count = itemRequest.count,
             imageUrl = imageUrl,
         )
@@ -51,13 +50,20 @@ class ItemService(
     fun updateItem(image: MultipartFile?, itemId: Long, itemRequest: ItemRequest) {
         val item = itemRepository.findById(itemId)
             .orElseThrow { ApiException(ItemErrorCode.ITEM_NOT_FOUND) }
-        val imageUrl = image?.let { s3Service.uploadImageFile(it) }
-            ?: item.imageUrl
-        val type = if (itemRequest.isConsumption) ItemType.CONSUMPTION else ItemType.RENTAL
+
+        val imageUrl: String
+
+        if (image == null || image.isEmpty) {
+            imageUrl = item.imageUrl
+        } else {
+            checkImageIsSvg(image)
+            imageUrl = s3Service.uploadImageFile(image)
+                ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
+        }
 
         item.update(
             name = itemRequest.name,
-            type = type,
+            type = itemRequest.type,
             count = itemRequest.count,
             imageUrl = imageUrl,
         )
@@ -85,5 +91,10 @@ class ItemService(
         }
 
         return false
+    }
+
+    fun checkImageIsSvg(image: MultipartFile) {
+        if (image.contentType != "image/svg+xml")
+            throw ApiException(ItemErrorCode.IMAGE_IS_NOT_SVG)
     }
 }
