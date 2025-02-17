@@ -13,12 +13,12 @@ import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 class UserAuthInfoService(
     private val memberRepository: MemberRepository
 ): UserDetailsService {
-    override fun loadUserByUsername(username: String?): UserDetails {
-        if (username == null) {
-            throw UsernameNotFoundException("Username not found")
+    override fun loadUserByUsername(studentId: String?): UserDetails {
+        if (studentId == null) {
+            throw UsernameNotFoundException("Member's studentId not found")
         }
 
-        val member = memberRepository.findByEmail(username)
+        val member = memberRepository.findByStudentId(studentId)
             ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
 
         return UserAuthInfo(member)

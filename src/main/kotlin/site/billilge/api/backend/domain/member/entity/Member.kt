@@ -12,22 +12,23 @@ import java.time.LocalDateTime
 @Table(name = "member")
 @EntityListeners(AuditingEntityListener::class)
 class Member(
-    @Column(name = "email", unique = true, nullable = false)
-    val email: String,
+    @Column(name = "name", nullable = false)
+    val name: String,
 
-    @Column(name = "student_id", unique = true, nullable = false)
-    val studentId: Int = 20211234,
+    @Column(name = "student_id", nullable = false, unique = true)
+    val studentId: String,
 
     @Column(name = "is_fee_paid", nullable = false, columnDefinition = "TINYINT(1)")
     var isFeePaid: Boolean = false,
-
-    @Column(name = "name", nullable = false)
-    val name: String,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
     val id: Long? = null
+
+    @Column(name = "email")
+    var email: String? = null
+        protected set
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -53,7 +54,7 @@ class Member(
         this.role = role
     }
 
-    fun updateDepartment(department: Department) {
-        this.department = department
+    fun updateEmail(email: String) {
+        this.email = email
     }
 }

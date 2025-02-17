@@ -61,6 +61,7 @@ class SecurityConfig (
             }
             .authorizeHttpRequests { httpRequests ->
                 httpRequests
+                    .requestMatchers("/auth/**").permitAll()
                     .requestMatchers(*SWAGGER_API_PATH).permitAll()
                     .anyRequest().authenticated()
             }

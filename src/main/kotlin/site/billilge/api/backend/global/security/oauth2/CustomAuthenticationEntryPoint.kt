@@ -9,7 +9,6 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import site.billilge.api.backend.global.exception.ErrorResponse
 import java.time.Instant
 
-//안쓰는 클래스 22
 class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
     override fun commence(request: HttpServletRequest, response: HttpServletResponse, authException: AuthenticationException) {
         returnErrorResponse(response, authException)
