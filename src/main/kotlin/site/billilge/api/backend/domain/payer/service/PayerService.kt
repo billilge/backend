@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.repository.MemberRepository
+import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.domain.payer.dto.response.PayerSummary
@@ -81,5 +82,19 @@ class PayerService(
                 payerRepository.save(payer)
             }
         }
+    }
+
+    @Transactional
+    fun deletePayers(request: PayerDeleteRequest) {
+        val payerStudentIds = payerRepository.findAllByIds(request.payerIds)
+            .mapNotNull { it.studentId }
+            .toList()
+
+        memberRepository.findAllByStudentIds(payerStudentIds)
+            .forEach { member ->
+                member.isFeePaid = false
+            }
+
+        payerRepository.deleteAllById(request.payerIds)
     }
 }

@@ -1,7 +1,10 @@
 package site.billilge.api.backend.domain.member.service
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.AdminMemberDetail
@@ -56,12 +59,30 @@ class MemberService(
         return SignUpResponse(accessToken)
     }
 
-    fun getAdminList(): AdminFindAllResponse {
-        val adminDetails = memberRepository.findAll()
-            .filter { it.role == Role.ADMIN }
+    fun getAdminList(pageNo: Int, size: Int): AdminFindAllResponse {
+        val pageRequest = PageRequest.of(pageNo, size, Sort.by(Sort.Direction.ASC, "studentId"))
+        val adminList = memberRepository.findAllByRole(Role.ADMIN, pageRequest)
+        val totalPage = adminList.totalPages
+        val adminDetails = adminList
             .map { AdminMemberDetail.from(it) }
             .toList()
 
-        return AdminFindAllResponse(adminDetails)
+        return AdminFindAllResponse(adminDetails, totalPage)
+    }
+
+    @Transactional
+    fun addAdmins(request: AdminRequest) {
+        memberRepository.findAllByIds(request.memberIds)
+            .forEach { member ->
+                member.updateRole(Role.ADMIN)
+            }
+    }
+
+    @Transactional
+    fun deleteAdmins(request: AdminRequest) {
+        memberRepository.findAllByIds(request.memberIds)
+            .forEach { member ->
+                member.updateRole(Role.USER)
+            }
     }
 }
