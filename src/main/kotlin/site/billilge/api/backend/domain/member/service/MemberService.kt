@@ -15,6 +15,7 @@ import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.payer.service.PayerService
+import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.security.jwt.TokenProvider
 import java.time.Duration
 
@@ -59,8 +60,12 @@ class MemberService(
         return SignUpResponse(accessToken)
     }
 
-    fun getAdminList(pageNo: Int, size: Int): AdminFindAllResponse {
-        val pageRequest = PageRequest.of(pageNo, size, Sort.by(Sort.Direction.ASC, "studentId"))
+    fun getAdminList(pageableCondition: PageableCondition): AdminFindAllResponse {
+        val pageRequest = PageRequest.of(
+            pageableCondition.pageNo,
+            pageableCondition.size,
+            Sort.by(Sort.Direction.ASC, "studentId")
+        )
         val adminList = memberRepository.findAllByRole(Role.ADMIN, pageRequest)
         val totalPage = adminList.totalPages
         val adminDetails = adminList
