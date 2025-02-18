@@ -15,14 +15,14 @@ import site.billilge.api.backend.domain.member.service.MemberService
 @RequestMapping
 class AuthController(
     private val memberService: MemberService
-) {
+) : AuthApi {
     @PostMapping("/auth/sign-up")
-    fun signUp(@RequestBody request: SignUpRequest): ResponseEntity<SignUpResponse> {
+    override fun signUp(@RequestBody request: SignUpRequest): ResponseEntity<SignUpResponse> {
         return ResponseEntity.ok(memberService.signUp(request))
     }
 
     @GetMapping("/login/oauth2/code/google")
-    fun googleLoginCallback(@RequestParam code: String?): ResponseEntity<Void> {
+    override fun googleLoginCallback(@RequestParam code: String?): ResponseEntity<Void> {
         return ResponseEntity.ok().build()
     }
 }
