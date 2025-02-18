@@ -22,14 +22,14 @@ class RentalService(
     private val itemRepository: ItemRepository,
 ){
     @Transactional
-    fun createRental(memberId: Long, rentalRequest: RentalRequest){
+    fun createRental(memberId: Long?, rentalRequest: RentalRequest){
         val item = itemRepository.findById(rentalRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
 
         if(rentalRequest.count > item.count)
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
 
-        val rentUser = memberRepository.findById(memberId)
+        val rentUser = memberRepository.findById(memberId!!)
             .orElseThrow { ApiException(RentalErrorCode.MEMBER_NOT_FOUND) }
 
         val newRental = RentalHistory(
@@ -42,14 +42,14 @@ class RentalService(
         rentalRepository.save(newRental)
     }
 
-    fun getRentalStatus(memberId: Long, itemId: Long
+    fun getRentalStatus(memberId: Long?, itemId: Long
     ) = RentalStatusResponse(
         itemId = itemId,
-        isRented = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(itemId, memberId, RentalStatus.RENTAL).isPresent
+        isRented = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(itemId, memberId!!, RentalStatus.RENTAL).isPresent
     )
 
-    fun getMemberRentalHistory(memberId: Long, rentalStatus: RentalStatus): List<RentalHistoryDetail>{
-        val rentalHistories = rentalRepository.findByMemberIdAndRentalStatus(memberId, rentalStatus)
+    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus): List<RentalHistoryDetail>{
+        val rentalHistories = rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
 
         return rentalHistories.map { it.toDto() }
     }

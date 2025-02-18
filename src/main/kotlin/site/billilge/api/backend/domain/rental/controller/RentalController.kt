@@ -17,12 +17,12 @@ class RentalController(
     private val rentalService: RentalService,
 ) : RentalApi {
 
-    @PostMapping("")
+    @PostMapping()
     override fun createRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestBody rentalRequest: RentalRequest
     ): ResponseEntity<Void> {
-        val memberId = userAuthInfo.getMemberId()
+        val memberId = userAuthInfo.memberId;
         rentalService.createRental(memberId, rentalRequest)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
@@ -32,7 +32,7 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @PathVariable itemId: Long
     ): ResponseEntity<RentalStatusResponse> {
-        val memberId = userAuthInfo.getMemberId()
+        val memberId = userAuthInfo.memberId;
         return ResponseEntity.ok(rentalService.getRentalStatus(memberId, itemId))
     }
 
@@ -41,7 +41,7 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestParam rentalStatus: RentalStatus
     ) : ResponseEntity<List<RentalHistoryDetail>> {
-        val memberId = userAuthInfo.getMemberId()
+        val memberId = userAuthInfo.memberId;
         return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
     }
 }
