@@ -65,7 +65,7 @@ class MemberService(
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
         )
-        val adminList = memberRepository.findAllByRole(Role.ADMIN, pageRequest)
+        val adminList = memberRepository.findAllByRoleAndNameContaining(Role.ADMIN, searchCondition.search, pageRequest)
         val totalPage = adminList.totalPages
         val adminDetails = adminList
             .map { AdminMemberDetail.from(it) }
