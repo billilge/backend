@@ -27,9 +27,10 @@ class AdminMemberController(
 
     @GetMapping("/admins")
     override fun getAdminList(
-        @ModelAttribute pageableCondition: PageableCondition
+        @ModelAttribute pageableCondition: PageableCondition,
+        @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<AdminFindAllResponse> {
-        return ResponseEntity.ok(memberService.getAdminList(pageableCondition))
+        return ResponseEntity.ok(memberService.getAdminList(pageableCondition, searchCondition))
     }
 
     @PostMapping("/admins")
