@@ -6,9 +6,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
-import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
+import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.service.ItemService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
+import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 
 @RestController
 @RequestMapping("/admin/items")
@@ -17,8 +19,16 @@ class AdminItemController(
     private val itemService: ItemService
 ) : AdminItemApi {
     @GetMapping
-    override fun getAllItems(): ResponseEntity<ItemFindAllResponse> {
-        return ResponseEntity.ok(itemService.getAllItems())
+    override fun getAllAdminItems(
+        @ModelAttribute pageableCondition: PageableCondition,
+        @ModelAttribute searchCondition: SearchCondition
+    ): ResponseEntity<AdminItemFindAllResponse> {
+        return ResponseEntity.ok(
+            itemService.getAllAdminItems(
+                pageableCondition,
+                searchCondition
+            )
+        )
     }
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

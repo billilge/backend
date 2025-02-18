@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import site.billilge.api.backend.domain.item.entity.Item
 import java.util.*
 
-interface ItemRepository: JpaRepository<Item, Long> {
+interface ItemRepository: JpaRepository<Item, Long>, ItemRepositoryCustom {
     override fun findById(id: Long): Optional<Item>
     fun existsByName(name: String): Boolean
 }

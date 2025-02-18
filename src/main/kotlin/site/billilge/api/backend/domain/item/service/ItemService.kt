@@ -1,14 +1,20 @@
 package site.billilge.api.backend.domain.item.service
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
+import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.item.exception.ItemErrorCode
 import site.billilge.api.backend.domain.item.repository.ItemRepository
+import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import site.billilge.api.backend.global.external.s3.S3Service
@@ -21,9 +27,23 @@ class ItemService(
 ) {
     fun getAllItems(): ItemFindAllResponse {
         val itemDetails = itemRepository.findAll()
-            .map { item -> ItemDetail.from(item) }
+            .map { ItemDetail.from(it) }
 
         return ItemFindAllResponse(itemDetails)
+    }
+
+    fun getAllAdminItems(
+        @ModelAttribute pageableCondition: PageableCondition,
+        @ModelAttribute searchCondition: SearchCondition,
+    ): AdminItemFindAllResponse {
+        val pageRequest = PageRequest.of(
+            pageableCondition.pageNo,
+            pageableCondition.size,
+            Sort.by(Sort.Direction.ASC, "name")
+        )
+        val adminItemDetails = itemRepository.findAllAsAdminItemDetailByKeyword(searchCondition.search, pageRequest)
+
+        return AdminItemFindAllResponse(adminItemDetails.content, adminItemDetails.totalPages)
     }
 
     @Transactional

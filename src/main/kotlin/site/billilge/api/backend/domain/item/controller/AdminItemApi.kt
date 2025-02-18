@@ -7,11 +7,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
+import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
+import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ErrorResponse
 
 @Tag(name = "(Admin) Item", description = "관리자용 물품 API")
@@ -28,7 +32,10 @@ interface AdminItemApi {
             )
         ]
     )
-    fun getAllItems(): ResponseEntity<ItemFindAllResponse>
+    fun getAllAdminItems(
+        @ModelAttribute pageableCondition: PageableCondition,
+        @ModelAttribute searchCondition: SearchCondition
+    ): ResponseEntity<AdminItemFindAllResponse>
 
     @Operation(
         summary = "대여 물품 등록",
