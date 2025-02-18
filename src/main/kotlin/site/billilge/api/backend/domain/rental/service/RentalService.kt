@@ -9,7 +9,6 @@ import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
-import site.billilge.api.backend.domain.rental.mapper.toDto
 import site.billilge.api.backend.domain.rental.repository.RentalRepository
 import site.billilge.api.backend.global.exception.ApiException
 
@@ -54,6 +53,6 @@ class RentalService(
         } else {
             rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
         }
-        return rentalHistories.map { it.toDto() }
+        return rentalHistories.map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) }
     }
 }
