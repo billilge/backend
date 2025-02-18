@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
+import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.service.RentalService
@@ -19,10 +19,10 @@ class RentalController(
     @PostMapping()
     override fun createRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @RequestBody rentalRequest: RentalRequest
+        @RequestBody rentalHistoryRequest: RentalHistoryRequest
     ): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
-        rentalService.createRental(memberId, rentalRequest)
+        rentalService.createRental(memberId, rentalHistoryRequest)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
