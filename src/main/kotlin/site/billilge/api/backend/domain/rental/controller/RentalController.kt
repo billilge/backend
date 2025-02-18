@@ -6,6 +6,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
+import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.service.RentalService
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
@@ -16,7 +17,7 @@ class RentalController(
     private val rentalService: RentalService,
 ) : RentalApi {
 
-    @PostMapping()
+    @PostMapping
     override fun createRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestBody rentalHistoryRequest: RentalHistoryRequest
@@ -33,5 +34,13 @@ class RentalController(
     ) : ResponseEntity<RentalHistoryFindAllResponse> {
         val memberId = userAuthInfo.memberId
         return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
+    }
+
+    @GetMapping("/return-required")
+    override fun getReturnRequiredHistory(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo
+    ): ResponseEntity<ReturnRequiredItemFindAllResponse> {
+        val memberId = userAuthInfo.memberId
+        return ResponseEntity.ok(rentalService.getReturnRequiredItems(memberId))
     }
 }

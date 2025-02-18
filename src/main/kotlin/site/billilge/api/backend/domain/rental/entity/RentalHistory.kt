@@ -23,6 +23,9 @@ class RentalHistory(
     @Enumerated(EnumType.STRING)
     val rentalStatus: RentalStatus,
 
+    @Column(name = "is_rental_required", nullable = false)
+    val isReturnRequired: Boolean = false,
+
     @JoinColumn(name = "worker_id", nullable =  true)
     @ManyToOne
     val worker: Member? = null,
