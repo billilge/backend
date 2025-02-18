@@ -2,6 +2,7 @@ package site.billilge.api.backend.domain.item.repository
 
 import com.querydsl.core.types.ExpressionUtils
 import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
@@ -37,9 +38,20 @@ class ItemRepositoryCustomImpl(
                 )
             )
             .from(item)
-            .where(item.name.like("%$keyword%"))
+            .where(searchCondition(item, keyword))
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
             .fetch()
 
-        return PageableExecutionUtils.getPage(contents, pageable) { contents.size.toLong() }
+        val count = queryFactory
+            .select(item.count())
+            .from(item)
+            .where(searchCondition(item, keyword))
+
+        return PageableExecutionUtils.getPage(contents, pageable) { count.fetchOne() ?: 0 }
+    }
+
+    private fun searchCondition(item: QItem, keyword: String): BooleanExpression {
+        return item.name.like("%${keyword}%")
     }
 }
