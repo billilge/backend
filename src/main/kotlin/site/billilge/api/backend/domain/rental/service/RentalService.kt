@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.repository.MemberRepository
-import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
+import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
@@ -25,18 +25,18 @@ class RentalService(
     private val itemRepository: ItemRepository,
 ){
     @Transactional
-    fun createRental(memberId: Long?, rentalRequest: RentalRequest){
-        val item = itemRepository.findById(rentalRequest.itemId)
+    fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest){
+        val item = itemRepository.findById(rentalHistoryRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
 
-        if(!rentalRequest.ignoreDuplicate) {
-            val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(rentalRequest.itemId, memberId!!, RentalStatus.RENTAL)
+        if(!rentalHistoryRequest.ignoreDuplicate) {
+            val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(rentalHistoryRequest.itemId, memberId!!, RentalStatus.RENTAL)
 
             if(rentalHistory.isPresent)
                 throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
         }
 
-        if(rentalRequest.count > item.count)
+        if(rentalHistoryRequest.count > item.count)
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
 
         val rentUser = memberRepository.findById(memberId!!)
@@ -46,7 +46,7 @@ class RentalService(
         val today = LocalDate.now(koreanZone)
         val requestedRentalDateTime = LocalDateTime.of(
             today,
-            LocalTime.of(rentalRequest.rentalTime.hour, rentalRequest.rentalTime.minute)
+            LocalTime.of(rentalHistoryRequest.rentalTime.hour, rentalHistoryRequest.rentalTime.minute)
         )
 
         val currentKoreanTime = LocalDateTime.now(koreanZone)
