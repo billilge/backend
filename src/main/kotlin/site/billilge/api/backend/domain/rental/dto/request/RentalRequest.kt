@@ -1,10 +1,13 @@
 package site.billilge.api.backend.domain.rental.dto.request
 
-import java.time.LocalDateTime
+data class RentalTime(
+    val hour: Int,
+    val minute: Int
+)
 
 data class RentalRequest(
     val itemId: Long,
     val count: Int,
-    val rentalDate: LocalDateTime,
+    val rentalTime: RentalTime,
     val ignoreDuplicate: Boolean
 )
