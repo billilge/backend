@@ -26,7 +26,7 @@ class RentalService(
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
 
         if(!rentalRequest.ignoreDuplicate) {
-            val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(rentalRequest.itemId, memberId!!, RentalStatus.RENTAL);
+            val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(rentalRequest.itemId, memberId!!, RentalStatus.RENTAL)
 
             if(rentalHistory.isPresent)
                 throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)

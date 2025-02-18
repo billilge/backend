@@ -21,7 +21,7 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestBody rentalRequest: RentalRequest
     ): ResponseEntity<Void> {
-        val memberId = userAuthInfo.memberId;
+        val memberId = userAuthInfo.memberId
         rentalService.createRental(memberId, rentalRequest)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
@@ -31,7 +31,7 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestParam(required =  false) rentalStatus: RentalStatus?
     ) : ResponseEntity<List<RentalHistoryDetail>> {
-        val memberId = userAuthInfo.memberId;
+        val memberId = userAuthInfo.memberId
         return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
     }
 }
