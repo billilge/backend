@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
-import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
+import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
@@ -46,5 +46,5 @@ interface RentalApi {
     fun getMemberRentalHistory(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestParam(required = false) rentalStatus: RentalStatus?)
-    : ResponseEntity<List<RentalHistoryDetail>>
+    : ResponseEntity<RentalHistoryFindAllResponse>
 }

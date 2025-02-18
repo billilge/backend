@@ -6,6 +6,7 @@ import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.rental.dto.request.RentalRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
+import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
@@ -47,12 +48,12 @@ class RentalService(
         rentalRepository.save(newRental)
     }
 
-    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): List<RentalHistoryDetail>{
+    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): RentalHistoryFindAllResponse{
         val rentalHistories = if (rentalStatus == null) {
-            rentalRepository.findByMemberId(memberId!!)
+            rentalRepository.findByMemberId(memberId!!).map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) }
         } else {
-            rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
+            rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus).map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) }
         }
-        return rentalHistories.map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) }
+        return RentalHistoryFindAllResponse(rentalHistories)
     }
 }
