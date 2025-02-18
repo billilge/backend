@@ -8,6 +8,6 @@ data class RentalHistoryDetail(
     val memberId: Long,
     val itemId: Long,
     val rentAt: LocalDateTime,
-    val returnedAt: LocalDateTime,
+    val returnedAt: LocalDateTime?,
     val rentalStatus: RentalStatus
 )
