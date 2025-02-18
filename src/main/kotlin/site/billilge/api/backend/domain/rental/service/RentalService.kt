@@ -80,4 +80,13 @@ class RentalService(
         return RentalHistoryFindAllResponse(rentalHistories
             .map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) })
     }
+
+    fun cancelRental(memberId: Long?, rentalHistoryId: Long){
+        val rentalHistory = rentalRepository.findById(rentalHistoryId)
+            .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND)}
+
+        rentalHistory.updateStatus(RentalStatus.CANCEL)
+
+        rentalRepository.save(rentalHistory)
+    }
 }

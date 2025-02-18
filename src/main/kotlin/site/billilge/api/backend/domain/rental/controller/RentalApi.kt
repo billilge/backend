@@ -47,4 +47,10 @@ interface RentalApi {
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestParam(required = false) rentalStatus: RentalStatus?)
     : ResponseEntity<RentalHistoryFindAllResponse>
+
+
+    fun cancelRental(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @RequestParam(required = true) rentalHistoryId: Long
+    ) : ResponseEntity<Void>
 }

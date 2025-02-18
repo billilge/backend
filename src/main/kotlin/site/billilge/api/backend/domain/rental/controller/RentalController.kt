@@ -34,4 +34,13 @@ class RentalController(
         val memberId = userAuthInfo.memberId
         return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
     }
+
+    @PatchMapping
+    override fun cancelRental(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @RequestParam rentalHistoryId: Long): ResponseEntity<Void> {
+        val memberId = userAuthInfo.memberId
+        rentalService.cancelRental(memberId, rentalHistoryId)
+        return ResponseEntity.status(HttpStatus.OK).build()
+    }
 }
