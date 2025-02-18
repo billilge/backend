@@ -5,7 +5,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
-import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "rental_history")
@@ -28,10 +28,10 @@ class RentalHistory(
     val worker: Member? = null,
 
     @Column(name = "rent_at", nullable = false)
-    val rentAt: Instant,
+    val rentAt: LocalDateTime,
 
     @Column(name = "returned_at", nullable = true)
-    val returnedAt: Instant? = null
+    val returnedAt: LocalDateTime? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
