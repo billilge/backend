@@ -1,14 +1,13 @@
 package site.billilge.api.backend.domain.member.service
 
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
-import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
-import site.billilge.api.backend.domain.member.dto.response.AdminMemberDetail
-import site.billilge.api.backend.domain.member.dto.response.SignUpResponse
+import site.billilge.api.backend.domain.member.dto.response.*
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.global.exception.ApiException
@@ -16,6 +15,7 @@ import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.payer.service.PayerService
 import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.security.jwt.TokenProvider
 import java.time.Duration
 
@@ -89,5 +89,27 @@ class MemberService(
             .forEach { member ->
                 member.updateRole(Role.USER)
             }
+    }
+
+    fun getAllMembers(
+        pageableCondition: PageableCondition,
+        searchCondition: SearchCondition
+    ): MemberFindAllResponse {
+        val pageRequest = PageRequest.of(
+            pageableCondition.pageNo,
+            pageableCondition.size,
+            Sort.by(Sort.Direction.ASC, "studentId")
+        )
+
+        val members = if (searchCondition.search.isEmpty()) {
+            memberRepository.findAll(pageRequest)
+        } else {
+            memberRepository.findAllByNameContaining(searchCondition.search, pageRequest)
+        }
+
+        val memberDetails = members
+            .map { MemberDetail.from(it) }
+
+        return MemberFindAllResponse(memberDetails.toList(), members.totalPages)
     }
 }
