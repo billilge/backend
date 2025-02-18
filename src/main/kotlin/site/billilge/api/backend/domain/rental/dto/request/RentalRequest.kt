@@ -5,5 +5,6 @@ import java.time.Instant
 data class RentalRequest(
     val itemId: Long,
     val count: Int,
-    val rentalDate: Instant
+    val rentalDate: Instant,
+    val ignoreDuplicate: Boolean
 )
