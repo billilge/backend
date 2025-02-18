@@ -35,12 +35,21 @@ class RentalController(
         return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
     }
 
-    @PatchMapping
+    @PatchMapping("/{rentalHistoryId}")
     override fun cancelRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @RequestParam rentalHistoryId: Long): ResponseEntity<Void> {
+        @PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
         rentalService.cancelRental(memberId, rentalHistoryId)
+        return ResponseEntity.status(HttpStatus.OK).build()
+    }
+
+    @PatchMapping("/return/{rentalHistoryId}")
+    override fun returnRental(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @PathVariable rentalHistoryId: Long): ResponseEntity<Void>  {
+        val memberId = userAuthInfo.memberId
+        rentalService.returnRental(memberId, rentalHistoryId)
         return ResponseEntity.status(HttpStatus.OK).build()
     }
 }

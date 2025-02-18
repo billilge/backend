@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
@@ -49,8 +50,31 @@ interface RentalApi {
     : ResponseEntity<RentalHistoryFindAllResponse>
 
 
+    @Operation(
+        summary = "대여 취소",
+        description = "대여 신청을 취소하는 API입니다. 신청한 사용자는 대여 신청을 취소할 수 있습니다."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "대여 취소 완료"),
+        ]
+    )
     fun cancelRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @RequestParam(required = true) rentalHistoryId: Long
-    ) : ResponseEntity<Void>
+        @PathVariable(required = true) rentalHistoryId: Long
+    ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "반납 신청",
+        description = "대여한 물품의 반납을 신청하는 API입니다. 반납 요청을 통해 대여 상태가 변경됩니다."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "반납 신청 완료"),
+        ]
+    )
+    fun returnRental(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @PathVariable(required = true) rentalHistoryId: Long
+    ): ResponseEntity<Void>
 }
