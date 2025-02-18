@@ -4,8 +4,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
+import site.billilge.api.backend.domain.member.dto.response.MemberFindAllResponse
 import site.billilge.api.backend.domain.member.service.MemberService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
+import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 
 @RestController
 @RequestMapping("admin/members")
@@ -13,22 +16,30 @@ import site.billilge.api.backend.global.annotation.OnlyAdmin
 class AdminMemberController(
     private val memberService: MemberService
 ) : AdminMemberApi {
+
+    @GetMapping
+    override fun getAllMembers(
+        @ModelAttribute pageableCondition: PageableCondition,
+        @ModelAttribute searchCondition: SearchCondition
+    ): ResponseEntity<MemberFindAllResponse> {
+        return ResponseEntity.ok(memberService.getAllMembers(pageableCondition, searchCondition))
+    }
+
     @GetMapping("/admins")
     override fun getAdminList(
-        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
-        @RequestParam(required = false, defaultValue = "10") size: Int
+        @ModelAttribute pageableCondition: PageableCondition
     ): ResponseEntity<AdminFindAllResponse> {
-        return ResponseEntity.ok(memberService.getAdminList(pageNo, size))
+        return ResponseEntity.ok(memberService.getAdminList(pageableCondition))
     }
 
     @PostMapping("/admins")
-    fun addAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
+    override fun addAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
         memberService.addAdmins(request)
         return ResponseEntity.ok().build()
     }
 
     @DeleteMapping("/admins")
-    fun deleteAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
+    override fun deleteAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
         memberService.deleteAdmins(request)
         return ResponseEntity.noContent().build()
     }

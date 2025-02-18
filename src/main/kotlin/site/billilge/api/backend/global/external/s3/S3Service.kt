@@ -26,7 +26,7 @@ class S3Service(
         val changedName = newFileName + ext
 
         val metadata = ObjectMetadata().apply {
-            contentType = "image/$ext"
+            contentType = imageFile.contentType
             contentLength = imageFile.size
         }
 
