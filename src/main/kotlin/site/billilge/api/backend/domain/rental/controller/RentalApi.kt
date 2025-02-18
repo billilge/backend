@@ -45,6 +45,6 @@ interface RentalApi {
     )
     fun getMemberRentalHistory(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @RequestParam rentalStatus: RentalStatus)
+        @RequestParam rentalStatus: RentalStatus?)
     : ResponseEntity<List<RentalHistoryDetail>>
 }

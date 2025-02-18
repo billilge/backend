@@ -45,9 +45,12 @@ class RentalService(
         rentalRepository.save(newRental)
     }
 
-    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus): List<RentalHistoryDetail>{
-        val rentalHistories = rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
-
+    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): List<RentalHistoryDetail>{
+        val rentalHistories = if (rentalStatus == null) {
+            rentalRepository.findByMemberId(memberId!!)
+        } else {
+            rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
+        }
         return rentalHistories.map { it.toDto() }
     }
 }
