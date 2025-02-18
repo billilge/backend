@@ -25,9 +25,12 @@ class RentalService(
         val item = itemRepository.findById(rentalRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
 
-        if(!rentalRequest.ignoreDuplicate
-            && rentalRepository.findByItemIdAndMemberIdAndRentalStatus(rentalRequest.itemId, memberId!!, RentalStatus.RENTAL).isPresent)
-            throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
+        if(!rentalRequest.ignoreDuplicate) {
+            val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(rentalRequest.itemId, memberId!!, RentalStatus.RENTAL);
+
+            if(rentalHistory.isPresent)
+                throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
+        }
 
         if(rentalRequest.count > item.count)
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
