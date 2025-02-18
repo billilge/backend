@@ -50,10 +50,11 @@ class RentalService(
 
     fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): RentalHistoryFindAllResponse{
         val rentalHistories = if (rentalStatus == null) {
-            rentalRepository.findByMemberId(memberId!!).map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) }
+            rentalRepository.findByMemberId(memberId!!)
         } else {
-            rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus).map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) }
+            rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
         }
-        return RentalHistoryFindAllResponse(rentalHistories)
+        return RentalHistoryFindAllResponse(rentalHistories
+            .map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) })
     }
 }
