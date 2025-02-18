@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import site.billilge.api.backend.domain.member.entity.Member
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.security.UserAuthInfoService
 import java.security.Key
 import java.time.Duration
@@ -33,10 +34,10 @@ class TokenProvider(
 
     fun generateToken(member: Member, expiredAt: Duration): String {
         val now = Date()
-        return makeToken(Date(now.time + expiredAt.toMillis()), member.studentId)
+        return makeToken(Date(now.time + expiredAt.toMillis()), member.studentId, member.role)
     }
 
-    private fun makeToken(expiry: Date, studentId: String): String {
+    private fun makeToken(expiry: Date, studentId: String, role: Role): String {
         val now = Date()
 
         return Jwts.builder()
@@ -45,6 +46,7 @@ class TokenProvider(
             .setIssuedAt(now)
             .setExpiration(expiry)
             .setSubject(studentId)
+            .claim("role", role.name)
             .signWith(createSecretKey(), signatureAlgorithm)
             .compact()
     }
