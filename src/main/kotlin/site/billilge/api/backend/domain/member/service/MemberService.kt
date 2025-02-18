@@ -1,6 +1,5 @@
 package site.billilge.api.backend.domain.member.service
 
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -60,13 +59,13 @@ class MemberService(
         return SignUpResponse(accessToken)
     }
 
-    fun getAdminList(pageableCondition: PageableCondition): AdminFindAllResponse {
+    fun getAdminList(pageableCondition: PageableCondition, searchCondition: SearchCondition): AdminFindAllResponse {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
         )
-        val adminList = memberRepository.findAllByRole(Role.ADMIN, pageRequest)
+        val adminList = memberRepository.findAllByRoleAndNameContaining(Role.ADMIN, searchCondition.search, pageRequest)
         val totalPage = adminList.totalPages
         val adminDetails = adminList
             .map { AdminMemberDetail.from(it) }
