@@ -61,7 +61,7 @@ interface RentalApi {
     )
     fun cancelRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @PathVariable(required = true) rentalHistoryId: Long
+        @PathVariable rentalHistoryId: Long
     ): ResponseEntity<Void>
 
     @Operation(
@@ -75,6 +75,6 @@ interface RentalApi {
     )
     fun returnRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @PathVariable(required = true) rentalHistoryId: Long
+        @PathVariable rentalHistoryId: Long
     ): ResponseEntity<Void>
 }
