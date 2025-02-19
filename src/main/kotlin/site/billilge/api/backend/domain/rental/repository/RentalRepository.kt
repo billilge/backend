@@ -9,4 +9,8 @@ interface RentalRepository: JpaRepository<RentalHistory, Long?> {
     fun findByMemberId(memberId: Long) : List<RentalHistory>
     fun findByItemIdAndMemberIdAndRentalStatus(itemId:Long, memberId: Long, rentalStatus: RentalStatus): Optional<RentalHistory>
     fun findByMemberIdAndRentalStatus(memberId: Long, rentalStatus: RentalStatus): List<RentalHistory>
+    fun findByMemberIdAndRentalStatusIn(
+        memberId: Long,
+        rentalStatuses: Collection<RentalStatus>
+    ): List<RentalHistory>
 }

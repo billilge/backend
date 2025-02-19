@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
+import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
@@ -47,4 +48,20 @@ interface RentalApi {
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestParam(required = false) rentalStatus: RentalStatus?)
     : ResponseEntity<RentalHistoryFindAllResponse>
+
+    @Operation(
+        summary = "본인의 반납 필요 대여 기록 조회",
+        description = "로그인한 사용자의 대여 기록 중, 대여 상태가 RENTAL, RETURN_PENDING, RETURN_CONFIRMED인 항목들을 조회하는 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "반납 필요 대여 기록 조회 완료"
+            )
+        ]
+    )
+    fun getReturnRequiredHistory(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+    ) : ResponseEntity<ReturnRequiredItemFindAllResponse>
 }
