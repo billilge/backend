@@ -21,7 +21,7 @@ class RentalHistory(
 
     @Column(name = "rental_status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val rentalStatus: RentalStatus,
+    var rentalStatus: RentalStatus,
 
     @JoinColumn(name = "worker_id", nullable =  true)
     @ManyToOne
@@ -37,4 +37,8 @@ class RentalHistory(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "history_id", nullable = false)
     val id: Long? = null
+
+    fun updateStatus(newStatus: RentalStatus) {
+        this.rentalStatus = newStatus
+    }
 }

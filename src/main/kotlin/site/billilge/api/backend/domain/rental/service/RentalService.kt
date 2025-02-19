@@ -83,6 +83,25 @@ class RentalService(
             .map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) })
     }
 
+    @Transactional
+    fun cancelRental(memberId: Long?, rentalHistoryId: Long){
+        val rentalHistory = rentalRepository.findById(rentalHistoryId)
+            .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND)}
+
+        rentalHistory.updateStatus(RentalStatus.CANCEL)
+
+        rentalRepository.save(rentalHistory)
+    }
+
+    @Transactional
+    fun returnRental(memberId: Long?, rentalHistoryId: Long){
+        val rentalHistory = rentalRepository.findById(rentalHistoryId)
+            .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND)}
+
+        rentalHistory.updateStatus(RentalStatus.RETURN_PENDING)
+
+        rentalRepository.save(rentalHistory)
+
     fun getReturnRequiredItems(memberId: Long?): ReturnRequiredItemFindAllResponse{
         val returnRequiredStatuses = listOf(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
         val returnRequiredItems = rentalRepository.findByMemberIdAndRentalStatusIn(memberId!!, returnRequiredStatuses);
