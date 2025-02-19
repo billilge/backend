@@ -7,6 +7,8 @@ import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryDetail
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
+import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemDetail
+import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemFindAllResponse
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
@@ -99,5 +101,12 @@ class RentalService(
         rentalHistory.updateStatus(RentalStatus.RETURN_PENDING)
 
         rentalRepository.save(rentalHistory)
+
+    fun getReturnRequiredItems(memberId: Long?): ReturnRequiredItemFindAllResponse{
+        val returnRequiredStatuses = listOf(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
+        val returnRequiredItems = rentalRepository.findByMemberIdAndRentalStatusIn(memberId!!, returnRequiredStatuses);
+
+        return ReturnRequiredItemFindAllResponse(
+            returnRequiredItems.map { rentalHistory -> ReturnRequiredItemDetail.from(rentalHistory) })
     }
 }

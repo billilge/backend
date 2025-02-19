@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
+import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
@@ -49,7 +50,6 @@ interface RentalApi {
         @RequestParam(required = false) rentalStatus: RentalStatus?)
     : ResponseEntity<RentalHistoryFindAllResponse>
 
-
     @Operation(
         summary = "대여 취소",
         description = "대여 신청을 취소하는 API입니다. 신청한 사용자는 대여 신청을 취소할 수 있습니다."
@@ -77,4 +77,20 @@ interface RentalApi {
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @PathVariable rentalHistoryId: Long
     ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "본인의 반납 필요 대여 기록 조회",
+        description = "로그인한 사용자의 대여 기록 중, 대여 상태가 RENTAL, RETURN_PENDING, RETURN_CONFIRMED인 항목들을 조회하는 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "반납 필요 대여 기록 조회 완료"
+            )
+        ]
+    )
+    fun getReturnRequiredHistory(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+    ) : ResponseEntity<ReturnRequiredItemFindAllResponse>
 }
