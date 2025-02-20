@@ -2,10 +2,13 @@ package site.billilge.api.backend.domain.item.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
@@ -54,6 +57,12 @@ interface AdminItemApi {
             )
         ]
     )
+    @RequestBody(
+        content = [Content(
+            encoding = [
+                Encoding(name = "itemRequest", contentType = MediaType.APPLICATION_JSON_VALUE)]
+        )]
+    )
     fun addItem(@RequestPart image: MultipartFile, @RequestPart itemRequest: ItemRequest): ResponseEntity<Void>
 
     @Operation(
@@ -72,6 +81,12 @@ interface AdminItemApi {
                 content = [Content(schema = Schema(implementation = ErrorResponse::class))]
             )
         ]
+    )
+    @RequestBody(
+        content = [Content(
+            encoding = [
+                Encoding(name = "itemRequest", contentType = MediaType.APPLICATION_JSON_VALUE)]
+        )]
     )
     fun updateItem(
         @PathVariable itemId: Long,
