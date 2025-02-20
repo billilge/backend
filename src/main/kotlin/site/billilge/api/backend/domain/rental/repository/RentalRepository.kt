@@ -19,6 +19,6 @@ interface RentalRepository: JpaRepository<RentalHistory, Long?> {
 
     fun findAllByRentalStatusIn(rentalStatuses: List<RentalStatus>): List<RentalHistory>
 
-    @Query("SELECT h FROM RentalHistory h WHERE h.member.name LIKE CONCAT('%', :name, '%')")
+    @Query("SELECT h FROM RentalHistory h WHERE h.member.name LIKE CONCAT('%', :memberName, '%')")
     fun findAllByMemberNameContaining(memberName: String, pageable: Pageable): Page<RentalHistory>
 }
