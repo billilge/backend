@@ -21,14 +21,14 @@ import site.billilge.api.backend.global.dto.SearchCondition
 @OnlyAdmin
 class AdminRentalController(
     private val rentalService: RentalService
-) {
+) : AdminRentalApi {
     @GetMapping("/dashboard")
-    fun getAllDashboardApplications(): ResponseEntity<DashboardResponse> {
+    override fun getAllDashboardApplications(): ResponseEntity<DashboardResponse> {
         return ResponseEntity.ok(rentalService.getAllDashboardApplications())
     }
 
     @GetMapping
-    fun getAllRentalHistories(
+    override fun getAllRentalHistories(
         @ModelAttribute pageableCondition: PageableCondition,
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<AdminRentalHistoryFindAllResponse> {
@@ -36,7 +36,7 @@ class AdminRentalController(
     }
 
     @PatchMapping("/{rentalHistoryId}")
-    fun updateRentalStatus(
+    override fun updateRentalStatus(
         @PathVariable rentalHistoryId: Long,
         @RequestBody request: RentalStatusUpdateRequest
     ): ResponseEntity<Void> {
