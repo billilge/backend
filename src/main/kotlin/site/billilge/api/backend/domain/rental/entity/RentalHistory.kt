@@ -1,6 +1,7 @@
 package site.billilge.api.backend.domain.rental.entity
 
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.member.entity.Member
@@ -37,6 +38,12 @@ class RentalHistory(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "history_id", nullable = false)
     val id: Long? = null
+
+    @CreatedDate
+    @Column(name = "applicated_at", nullable = false)
+    var applicatedAt: LocalDateTime = LocalDateTime.now()
+        protected set
+
 
     fun updateStatus(newStatus: RentalStatus) {
         this.rentalStatus = newStatus

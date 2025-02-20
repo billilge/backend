@@ -48,10 +48,11 @@ class RentalController(
     @PatchMapping("/return/{rentalHistoryId}")
     override fun returnRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
-        @PathVariable rentalHistoryId: Long): ResponseEntity<Void>  {
+        @PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
         rentalService.returnRental(memberId, rentalHistoryId)
         return ResponseEntity.status(HttpStatus.OK).build()
+    }
 
     @GetMapping("/return-required")
     override fun getReturnRequiredHistory(
