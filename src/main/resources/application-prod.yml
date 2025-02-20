@@ -59,3 +59,7 @@ cloud:
       static: us-west-2
     stack:
       auto: false
+
+swagger:
+  server:
+    base-url: ${SWAGGER_SERVER_BASE_URL}
