@@ -30,6 +30,5 @@ class NotificationService(
         }
 
         notification.readNotification()
-        notificationRepository.save(notification)
     }
 }
