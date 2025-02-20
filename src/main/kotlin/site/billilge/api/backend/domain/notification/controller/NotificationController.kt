@@ -2,9 +2,7 @@ package site.billilge.api.backend.domain.notification.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.notification.api.NotificationApi
 import site.billilge.api.backend.domain.notification.dto.response.NotificationFindAllResponse
 import site.billilge.api.backend.domain.notification.service.NotificationService
@@ -22,5 +20,15 @@ class NotificationController (
     ): ResponseEntity<NotificationFindAllResponse> {
         val memberId = userAuthInfo.memberId
         return ResponseEntity.ok(notificationService.getNotifications(memberId))
+    }
+
+    @PatchMapping("/{notificationId}")
+    override fun readNotification(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @PathVariable notificationId: Long
+    ): ResponseEntity<Void> {
+        val memberId = userAuthInfo.memberId
+        notificationService.readNotification(memberId, notificationId)
+        return ResponseEntity.ok().build()
     }
 }

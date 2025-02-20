@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.PathVariable
 import site.billilge.api.backend.domain.notification.dto.response.NotificationFindAllResponse
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
@@ -27,4 +28,21 @@ interface NotificationApi {
     fun getNotifications(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo
     ): ResponseEntity<NotificationFindAllResponse>
+
+
+    @Operation(
+        summary = "알림 읽음 처리",
+        description = "사용자가 특정 알림을 읽음 처리합니다."
+    )
+    @ApiResponses(
+        value =  [
+            ApiResponse(responseCode = "200", description = "알림 읽음 처리 완료"),
+            ApiResponse(responseCode = "403", description = "권한이 없는 사용자"),
+            ApiResponse(responseCode = "404", description = "알림을 찾을 수 없음")
+        ]
+    )
+    fun readNotification(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @PathVariable notificationId: Long
+    ): ResponseEntity<Void>
 }
