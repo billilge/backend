@@ -1,11 +1,11 @@
 package site.billilge.api.backend.domain.notification.entity
 
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.notification.enums.NotificationType
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 @Entity
 @Table(name = "notifications")
@@ -28,8 +28,9 @@ class Notification(
     @Column(name = "is_read", nullable = false, columnDefinition = "TINYINT(1)")
     var isRead: Boolean = false,
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+    val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
