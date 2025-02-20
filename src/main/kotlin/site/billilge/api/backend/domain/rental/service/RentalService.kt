@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
+import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.*
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
@@ -138,6 +139,14 @@ class RentalService(
             .toList()
 
         return AdminRentalHistoryFindAllResponse(adminRentalHistoryDetails, results.totalPages)
+    }
+
+    @Transactional
+    fun updateRentalStatus(rentalHistoryId: Long, request: RentalStatusUpdateRequest) {
+        val rentalHistory = rentalRepository.findById(rentalHistoryId)
+            .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
+
+        rentalHistory.updateStatus(request.rentalStatus)
     }
 
     companion object {
