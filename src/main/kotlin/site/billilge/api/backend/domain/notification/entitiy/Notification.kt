@@ -25,7 +25,7 @@ class Notification(
     @Column(name = "link", nullable = false)
     val link: String,
 
-    @Column(name = "is_read", nullable = false)
+    @Column(name = "is_read", nullable = false, columnDefinition = "TINYINT(1)")
     var isRead: Boolean = false,
 
     @Column(name = "created_at", nullable = false)
