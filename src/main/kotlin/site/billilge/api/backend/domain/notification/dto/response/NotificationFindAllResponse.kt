@@ -1,5 +1,5 @@
 package site.billilge.api.backend.domain.notification.dto.response
 
 data class NotificationFindAllResponse(
-    val notificationService: List<NotificationDetail>
+    val messages: List<NotificationDetail>
 )
