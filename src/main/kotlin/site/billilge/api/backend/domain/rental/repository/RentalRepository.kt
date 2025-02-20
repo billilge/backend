@@ -13,4 +13,6 @@ interface RentalRepository: JpaRepository<RentalHistory, Long?> {
         memberId: Long,
         rentalStatuses: Collection<RentalStatus>
     ): List<RentalHistory>
+
+    fun findAllByRentalStatusIn(rentalStatuses: List<RentalStatus>): List<RentalHistory>
 }
