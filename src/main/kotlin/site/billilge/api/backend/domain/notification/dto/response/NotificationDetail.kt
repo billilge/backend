@@ -2,7 +2,7 @@ package site.billilge.api.backend.domain.notification.dto.response
 
 import site.billilge.api.backend.domain.notification.entity.Notification
 import site.billilge.api.backend.domain.notification.enums.NotificationType
-import java.time.Instant
+import java.time.LocalDateTime
 
 data class NotificationDetail(
     val notificationId: Long,
@@ -10,7 +10,7 @@ data class NotificationDetail(
     val message: String,
     val link: String,
     val isRead: Boolean,
-    val createdAt: Instant
+    val createdAt: LocalDateTime
 ) {
     companion object {
         fun from(notification: Notification): NotificationDetail {
