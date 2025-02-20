@@ -38,7 +38,14 @@ class MemberService(
 
         if (memberRepository.existsByStudentIdAndName(studentId, name)) {
             val member = memberRepository.findByStudentId(studentId)
-            member?.updateEmail(email)
+
+            member?.let {
+                it.updateEmail(email)
+
+                return SignUpResponse(
+                    tokenProvider.generateToken(it, Duration.ofDays(30))
+                )
+            }
         }
 
         val isFeePaid = payerService.isPayer(name, studentId)
