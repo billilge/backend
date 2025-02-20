@@ -1,3 +1,18 @@
 spring:
-  application:
-    name: backend
+  profiles:
+    active: ${profile}
+
+springdoc:
+  swagger-ui:
+    path: /swagger # 스웨거 접근 경로
+    groups-order: DESC # API 그룹 표시 순서
+    tags-sorter: alpha # 태그 정렬 순서.
+    operationsSorter: method # 컨트롤러 정렬 순서
+    disable-swagger-default-url: true # swagger-ui default url인 petstore html의 비활성화 설정
+    display-request-duration: true
+  api-docs:
+    path: /api-docs # openAPI 접근 경로. default 값은 /v3/api-docs 이다.
+  show-actuator: true # Spring Actuator의 endpoint까지 보여줄 것인지?
+  default-consumes-media-type: application/json # request media type 의 기본 값
+  default-produces-media-type: application/json # response media type 의 기본 값
+  paths-to-match: /** # 해당 패턴에 매칭되는 controller만 swagger-ui에 노출한다.

@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: backend
+
+  datasource:
+    url: jdbc:mysql://${DB_URL}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          # 구글 로그인 추가
+          google:
+            client-id: ${OAUTH2_GOOGLE_CLIENT_ID}
+            client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        dialect.storage_engine: innodb
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+      resolve-lazily: true
+
+
+jwt:
+  secret_key: ${JWT_SECRET_KEY}
+  issuer: ${JWT_ISSUER}
+
+login:
+  redirect:
+    url: ${LOGIN_REDIRECT_URL}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET}
+      base-url: ${S3_BASE_URL}
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: us-west-2
+    stack:
+      auto: false
