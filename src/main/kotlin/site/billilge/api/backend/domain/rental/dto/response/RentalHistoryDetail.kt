@@ -16,9 +16,9 @@ data class RentalHistoryDetail(
     val memberId: MemberSummary,
     @field:Schema(description = "대여한 물품의 요약 정보", required = true)
     val itemId: ItemSummary,
-    @field:Schema(description = "대여 시작 시각", example = "2025-01-01T10:00:00")
+    @field:Schema(description = "대여 시작 시각")
     val rentAt: LocalDateTime,
-    @field:Schema(description = "반납 시각 (반납되지 않았으면 null)", example = "2025-01-07T10:00:00")
+    @field:Schema(description = "반납 시각 (반납되지 않았으면 null)")
     val returnedAt: LocalDateTime?,
     @field:Schema(description = "대여 상태", example = "PENDING")
     val rentalStatus: RentalStatus

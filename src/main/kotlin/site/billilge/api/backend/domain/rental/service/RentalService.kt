@@ -1,5 +1,7 @@
 package site.billilge.api.backend.domain.rental.service
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.repository.ItemRepository
@@ -10,6 +12,8 @@ import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
 import site.billilge.api.backend.domain.rental.repository.RentalRepository
+import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -119,8 +123,26 @@ class RentalService(
         return DashboardResponse(rentalApplicationDetails)
     }
 
+    fun getAllRentalHistories(
+        pageableCondition: PageableCondition,
+        searchCondition: SearchCondition
+    ): AdminRentalHistoryFindAllResponse {
+        val pageRequest = PageRequest.of(
+            pageableCondition.pageNo,
+            pageableCondition.size,
+            Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "applicatedAt")
+        )
+        val results = rentalRepository.findAllByMemberNameContaining(searchCondition.search, pageRequest)
+        val adminRentalHistoryDetails = results
+            .map { AdminRentalHistoryFindAllResponse.AdminRentalHistoryDetail.from(it) }
+            .toList()
+
+        return AdminRentalHistoryFindAllResponse(adminRentalHistoryDetails, results.totalPages)
+    }
+
     companion object {
         private val DASHBOARD_STATUS = listOf(RentalStatus.PENDING, RentalStatus.RETURN_PENDING)
-        private val RETURN_REQUIRED_STATUS = listOf(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
+        private val RETURN_REQUIRED_STATUS =
+            listOf(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
     }
 }
