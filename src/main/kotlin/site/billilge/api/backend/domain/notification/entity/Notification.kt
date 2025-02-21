@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import site.billilge.api.backend.domain.member.entity.Member
-import site.billilge.api.backend.domain.notification.enums.NotificationType
+import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import java.time.LocalDateTime
 
 @Entity
@@ -17,13 +17,10 @@ class Notification(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    val type: NotificationType,
+    val status: NotificationStatus,
 
-    @Column(name = "message", nullable = false)
-    val message: String,
-
-    @Column(name = "link", nullable = false)
-    val link: String,
+    @Column(name = "format_values")
+    val formatValues: String? = null,
 
     @Column(name = "is_read", nullable = false, columnDefinition = "TINYINT(1)")
     var isRead: Boolean = false,
@@ -40,4 +37,7 @@ class Notification(
     fun readNotification() {
         this.isRead = true
     }
+
+    val formatValueList: List<String>
+        get() = formatValues?.split(",") ?: emptyList()
 }

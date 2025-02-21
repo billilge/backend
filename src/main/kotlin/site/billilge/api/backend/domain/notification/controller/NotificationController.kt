@@ -3,7 +3,7 @@ package site.billilge.api.backend.domain.notification.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import site.billilge.api.backend.domain.notification.api.NotificationApi
+import site.billilge.api.backend.domain.notification.dto.response.NotificationCountResponse
 import site.billilge.api.backend.domain.notification.dto.response.NotificationFindAllResponse
 import site.billilge.api.backend.domain.notification.service.NotificationService
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
@@ -20,6 +20,14 @@ class NotificationController (
     ): ResponseEntity<NotificationFindAllResponse> {
         val memberId = userAuthInfo.memberId
         return ResponseEntity.ok(notificationService.getNotifications(memberId))
+    }
+
+    @GetMapping("/count")
+    override fun getNotificationCount(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo
+    ): ResponseEntity<NotificationCountResponse> {
+        val memberId = userAuthInfo.memberId
+        return ResponseEntity.ok(notificationService.getNotificationCount(memberId))
     }
 
     @PatchMapping("/{notificationId}")
