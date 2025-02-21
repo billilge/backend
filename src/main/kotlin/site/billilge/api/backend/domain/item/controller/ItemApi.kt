@@ -1,7 +1,6 @@
 package site.billilge.api.backend.domain.item.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -28,11 +27,6 @@ interface ItemApi {
     )
     @GetMapping
     fun getItems(
-        @Parameter(
-            description = "검색어 (물품 이름에 포함된 단어)",
-            example = "고데기",
-            required = false
-        )
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<ItemFindAllResponse>
 }

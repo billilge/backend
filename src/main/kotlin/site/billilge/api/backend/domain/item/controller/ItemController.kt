@@ -1,6 +1,5 @@
 package site.billilge.api.backend.domain.item.controller
 
-import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -17,11 +16,6 @@ class ItemController(
 ) : ItemApi {
     @GetMapping
     override fun getItems(
-        @Parameter(
-            description = "검색어 (물품 이름에 포함된 단어)",
-            example = "고데기",
-            required = false
-        )
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<ItemFindAllResponse> {
         val response = itemService.searchItems(searchCondition)
