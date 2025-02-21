@@ -117,4 +117,10 @@ class ItemService(
         if (image.contentType != "image/svg+xml")
             throw ApiException(ItemErrorCode.IMAGE_IS_NOT_SVG)
     }
+
+    fun searchItems(searchCondition: SearchCondition): ItemFindAllResponse {
+        val items = itemRepository.findByItemName(searchCondition.search)
+
+        return ItemFindAllResponse(items.map { ItemDetail.from(it) })
+    }
 }

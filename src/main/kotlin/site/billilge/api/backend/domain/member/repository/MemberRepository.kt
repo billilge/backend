@@ -28,4 +28,6 @@ interface MemberRepository: JpaRepository<Member, Long> {
 
     @Query("select m from Member m where m.studentId in :studentIds")
     fun findAllByStudentIds(@Param("studentIds") studentIds: List<String>): List<Member>
+
+    fun findAllByRole(role: Role): List<Member>
 }

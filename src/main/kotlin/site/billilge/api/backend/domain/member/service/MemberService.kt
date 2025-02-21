@@ -2,9 +2,11 @@ package site.billilge.api.backend.domain.member.service
 
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
+import site.billilge.api.backend.domain.member.dto.request.MemberFCMTokenRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
 import site.billilge.api.backend.domain.member.dto.response.*
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
@@ -117,5 +119,13 @@ class MemberService(
             .map { MemberDetail.from(it) }
 
         return MemberFindAllResponse(memberDetails.toList(), members.totalPages)
+    }
+
+    @Transactional
+    fun setMemberFCMToken(memberId: Long?, request: MemberFCMTokenRequest) {
+        val member = (memberRepository.findByIdOrNull(memberId!!)
+            ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND))
+
+        member.updateFCMToken(request.token)
     }
 }

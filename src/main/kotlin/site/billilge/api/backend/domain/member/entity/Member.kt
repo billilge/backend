@@ -40,6 +40,10 @@ class Member(
     var role: Role = Role.USER
         protected set
 
+    @Column(name = "fcm_token")
+    var fcmToken: String? = null
+        protected set
+
     @CreatedDate
     @Column(name = "created_at", nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
@@ -56,5 +60,9 @@ class Member(
 
     fun updateEmail(email: String) {
         this.email = email
+    }
+
+    fun updateFCMToken(fcmToken: String) {
+        this.fcmToken = fcmToken
     }
 }
