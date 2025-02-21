@@ -3,8 +3,6 @@ package site.billilge.api.backend.domain.item.dto.response
 import io.swagger.v3.oas.annotations.media.Schema
 import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.item.enums.ItemType
-import site.billilge.api.backend.domain.item.exception.ItemErrorCode
-import site.billilge.api.backend.global.exception.ApiException
 
 @Schema
 data class ItemDetail(
@@ -23,8 +21,7 @@ data class ItemDetail(
         @JvmStatic
         fun from(item: Item): ItemDetail {
             return ItemDetail(
-                itemId = item.id
-                    ?: throw ApiException(ItemErrorCode.ITEM_ID_IS_NULL),
+                itemId = item.id!!,
                 itemName = item.name,
                 itemType = item.type,
                 count = item.count,
