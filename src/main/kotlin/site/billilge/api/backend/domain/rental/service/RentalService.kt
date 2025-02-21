@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.repository.MemberRepository
+import site.billilge.api.backend.domain.notification.enums.NotificationStatus
+import site.billilge.api.backend.domain.notification.service.NotificationService
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.*
@@ -27,6 +29,7 @@ class RentalService(
     private val memberRepository: MemberRepository,
     private val rentalRepository: RentalRepository,
     private val itemRepository: ItemRepository,
+    private val notificationService: NotificationService
 ) {
     @Transactional
     fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest) {
@@ -63,6 +66,7 @@ class RentalService(
         }
 
         val rentalHour = requestedRentalDateTime.hour
+        val rentalMinute = requestedRentalDateTime.minute
         if (rentalHour < 10 || rentalHour > 17) {
             throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
         }
@@ -77,6 +81,26 @@ class RentalService(
         )
 
         rentalRepository.save(newRental)
+
+        notificationService.sendNotification(
+            rentUser,
+            NotificationStatus.USER_RENTAL_APPLY,
+            listOf(
+                item.name
+            ),
+            true
+        )
+
+        notificationService.sendNotificationToAdmin(
+            NotificationStatus.ADMIN_RENTAL_APPLY,
+            listOf(
+                rentUser.name,
+                rentUser.studentId,
+                "${String.format("%02d", rentalHour)}:${String.format("%02d", rentalMinute)}",
+                item.name
+            ),
+            true
+        )
     }
 
     fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): RentalHistoryFindAllResponse {
@@ -94,20 +118,47 @@ class RentalService(
     fun cancelRental(memberId: Long?, rentalHistoryId: Long) {
         val rentalHistory = rentalRepository.findById(rentalHistoryId)
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
+        val renter = rentalHistory.member
 
         rentalHistory.updateStatus(RentalStatus.CANCEL)
 
-        rentalRepository.save(rentalHistory)
+        notificationService.sendNotificationToAdmin(
+            NotificationStatus.ADMIN_RENTAL_CANCEL,
+            listOf(
+                renter.name,
+                renter.studentId,
+                rentalHistory.item.name
+            ),
+            true
+        )
     }
 
     @Transactional
     fun returnRental(memberId: Long?, rentalHistoryId: Long) {
         val rentalHistory = rentalRepository.findById(rentalHistoryId)
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
+        val renter = rentalHistory.member
 
         rentalHistory.updateStatus(RentalStatus.RETURN_PENDING)
 
-        rentalRepository.save(rentalHistory)
+        notificationService.sendNotification(
+            renter,
+            NotificationStatus.USER_RETURN_APPLY,
+            listOf(
+                rentalHistory.item.name
+            ),
+            true
+        )
+
+        notificationService.sendNotificationToAdmin(
+            NotificationStatus.ADMIN_RETURN_APPLY,
+            listOf(
+                renter.name,
+                renter.studentId,
+                rentalHistory.item.name
+            ),
+            true
+        )
     }
 
     fun getReturnRequiredItems(memberId: Long?): ReturnRequiredItemFindAllResponse {
@@ -145,8 +196,62 @@ class RentalService(
     fun updateRentalStatus(rentalHistoryId: Long, request: RentalStatusUpdateRequest) {
         val rentalHistory = rentalRepository.findById(rentalHistoryId)
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
+        val renter = rentalHistory.member
 
         rentalHistory.updateStatus(request.rentalStatus)
+
+        val itemName = rentalHistory.item.name
+
+        when (rentalHistory.rentalStatus) {
+            RentalStatus.CONFIRMED -> {
+                //승인
+                notificationService.sendNotification(
+                    renter,
+                    NotificationStatus.USER_RENTAL_APPROVED,
+                    listOf(
+                        itemName
+                    ),
+                    true
+                )
+            }
+
+            RentalStatus.REJECTED -> {
+                //대여 반려
+                notificationService.sendNotification(
+                    renter,
+                    NotificationStatus.USER_RENTAL_REJECTED,
+                    listOf(
+                        itemName
+                    ),
+                    true
+                )
+            }
+
+            RentalStatus.RETURN_CONFIRMED -> {
+                //반납 승인
+                notificationService.sendNotification(
+                    renter,
+                    NotificationStatus.USER_RETURN_APPROVED,
+                    listOf(
+                        itemName
+                    ),
+                    true
+                )
+            }
+
+            RentalStatus.RETURNED -> {
+                //반납 완료
+                notificationService.sendNotification(
+                    renter,
+                    NotificationStatus.USER_RETURN_COMPLETED,
+                    listOf(
+                        itemName
+                    )
+                )
+            }
+
+            else -> return
+        }
     }
 
     companion object {
