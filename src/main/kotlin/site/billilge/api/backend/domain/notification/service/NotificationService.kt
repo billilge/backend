@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.member.repository.MemberRepository
+import site.billilge.api.backend.domain.notification.dto.response.NotificationCountResponse
 import site.billilge.api.backend.domain.notification.dto.response.NotificationDetail
 import site.billilge.api.backend.domain.notification.dto.response.NotificationFindAllResponse
 import site.billilge.api.backend.domain.notification.entity.Notification
@@ -87,5 +88,11 @@ class NotificationService(
         admins.forEach { admin ->
             sendNotification(admin, type, formatValues, needPush)
         }
+    }
+
+    fun getNotificationCount(memberId: Long?): NotificationCountResponse {
+        val count = notificationRepository.countUserNotificationsByMemberId(memberId!!)
+
+        return NotificationCountResponse(count)
     }
 }

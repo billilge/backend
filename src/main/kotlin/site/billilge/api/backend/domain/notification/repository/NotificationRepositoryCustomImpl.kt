@@ -41,6 +41,21 @@ class NotificationRepositoryCustomImpl(
             .fetch()
     }
 
+    override fun countUserNotificationsByMemberId(memberId: Long): Int {
+        val notification = QNotification.notification
+
+        return queryFactory
+            .select(notification.count())
+            .from(notification)
+            .where(
+                memberIdEquals(notification, memberId)
+                    .and(
+                        notification.status.`in`(USER_TYPE)
+                    )
+            )
+            .fetchOne()?.toInt() ?: 0
+    }
+
     private fun memberIdEquals(notification: QNotification, memberId: Long): BooleanExpression {
         return notification.member.id.eq(memberId)
     }
