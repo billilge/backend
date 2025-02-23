@@ -61,15 +61,15 @@ class RentalService(
         )
 
         val currentKoreanTime = LocalDateTime.now(koreanZone)
-        if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
-            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
-        }
+//        if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
+//            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
+//        }
 
         val rentalHour = requestedRentalDateTime.hour
         val rentalMinute = requestedRentalDateTime.minute
-        if (rentalHour < 10 || rentalHour > 17) {
-            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
-        }
+//        if (rentalHour < 10 || rentalHour > 17) {
+//            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
+//        }
 
         val rentAt = requestedRentalDateTime.atZone(koreanZone).toLocalDateTime()
 
