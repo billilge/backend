@@ -32,7 +32,10 @@ class RentalHistory(
     val rentAt: LocalDateTime,
 
     @Column(name = "returned_at", nullable = true)
-    val returnedAt: LocalDateTime? = null
+    val returnedAt: LocalDateTime? = null,
+
+    @Column(name = "rented_count", nullable = false)
+    val rentedCount: Int,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -35,6 +35,7 @@ class RentalService(
     fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest) {
         val item = itemRepository.findById(rentalHistoryRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
+        val rentedCount = rentalHistoryRequest.count
 
         if (!rentalHistoryRequest.ignoreDuplicate) {
             val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(
@@ -47,7 +48,7 @@ class RentalService(
                 throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
         }
 
-        if (rentalHistoryRequest.count > item.count)
+        if (rentedCount > item.count)
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
 
         val rentUser = memberRepository.findById(memberId!!)
@@ -80,10 +81,11 @@ class RentalService(
             member = rentUser,
             item = item,
             rentalStatus = RentalStatus.PENDING,
+            rentedCount = rentedCount,
             rentAt = rentAt
         )
 
-        item.subtractCount(rentalHistoryRequest.count)
+        item.subtractCount(rentedCount)
 
         rentalRepository.save(newRental)
 
@@ -204,8 +206,8 @@ class RentalService(
         val renter = rentalHistory.member
 
         rentalHistory.updateStatus(request.rentalStatus)
-
-        val itemName = rentalHistory.item.name
+        val item = rentalHistory.item
+        val itemName = item.name
 
         when (rentalHistory.rentalStatus) {
             RentalStatus.CONFIRMED -> {
@@ -246,6 +248,7 @@ class RentalService(
 
             RentalStatus.RETURNED -> {
                 //반납 완료
+                item.addCount(rentalHistory.rentedCount)
                 notificationService.sendNotification(
                     renter,
                     NotificationStatus.USER_RETURN_COMPLETED,
