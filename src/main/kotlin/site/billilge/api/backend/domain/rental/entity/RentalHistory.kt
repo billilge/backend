@@ -57,7 +57,7 @@ class RentalHistory(
         this.rentalStatus = newStatus
     }
 
-    fun setWorker(worker: Member) {
+    fun updateWorker(worker: Member) {
         this.worker = worker
     }
 }

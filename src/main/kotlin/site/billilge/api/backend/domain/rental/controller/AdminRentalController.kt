@@ -43,7 +43,7 @@ class AdminRentalController(
         @PathVariable rentalHistoryId: Long,
         @RequestBody request: RentalStatusUpdateRequest
     ): ResponseEntity<Void> {
-        rentalService.updateRentalStatus(rentalHistoryId, request)
+        rentalService.updateRentalStatus(userAuthInfo.memberId, rentalHistoryId, request)
         return ResponseEntity.ok().build()
     }
 }
