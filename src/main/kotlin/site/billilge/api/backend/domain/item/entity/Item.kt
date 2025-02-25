@@ -25,4 +25,16 @@ class Item(
         this.count = count
         imageUrl?.let { this.imageUrl = it }
     }
+
+    fun addCount(count: Int) {
+        this.count += count
+    }
+
+    fun subtractCount(count: Int) {
+        if (count > this.count) {
+            this.count = 0
+            return
+        }
+        this.count -= count
+    }
 }

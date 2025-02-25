@@ -53,6 +53,9 @@ class RentalService(
         val rentUser = memberRepository.findById(memberId!!)
             .orElseThrow { ApiException(RentalErrorCode.MEMBER_NOT_FOUND) }
 
+        if (!rentUser.isFeePaid)
+            throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER)
+
         val koreanZone = ZoneId.of("Asia/Seoul")
         val today = LocalDate.now(koreanZone)
         val requestedRentalDateTime = LocalDateTime.of(
@@ -61,15 +64,15 @@ class RentalService(
         )
 
         val currentKoreanTime = LocalDateTime.now(koreanZone)
-//        if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
-//            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
-//        }
+        if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
+            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
+        }
 
         val rentalHour = requestedRentalDateTime.hour
         val rentalMinute = requestedRentalDateTime.minute
-//        if (rentalHour < 10 || rentalHour > 17) {
-//            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
-//        }
+        if (rentalHour < 10 || rentalHour > 17) {
+            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_OUT_OF_RANGE)
+        }
 
         val rentAt = requestedRentalDateTime.atZone(koreanZone).toLocalDateTime()
 
@@ -79,6 +82,8 @@ class RentalService(
             rentalStatus = RentalStatus.PENDING,
             rentAt = rentAt
         )
+
+        item.subtractCount(rentalHistoryRequest.count)
 
         rentalRepository.save(newRental)
 
