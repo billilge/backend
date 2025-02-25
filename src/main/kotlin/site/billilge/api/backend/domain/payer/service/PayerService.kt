@@ -74,7 +74,8 @@ class PayerService(
             val name = payerItem.name
             val studentId = payerItem.studentId
             val enrollmentYear = studentId.substring(0, 4)
-            val registered = memberRepository.existsByStudentIdAndName(studentId, name)
+            val registeredMember = memberRepository.findByStudentIdAndName(studentId, name)
+            val registered = registeredMember != null
 
             if (!isPayer(name, studentId)) {
                 val payer = Payer(
@@ -87,6 +88,8 @@ class PayerService(
 
                 payerRepository.save(payer)
             }
+
+            registeredMember?.isFeePaid = true
         }
     }
 
