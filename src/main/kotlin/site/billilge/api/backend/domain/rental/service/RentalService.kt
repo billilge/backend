@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.repository.ItemRepository
+import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import site.billilge.api.backend.domain.notification.service.NotificationService
@@ -35,6 +36,7 @@ class RentalService(
     fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest) {
         val item = itemRepository.findById(rentalHistoryRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
+        val rentedCount = rentalHistoryRequest.count
 
         if (!rentalHistoryRequest.ignoreDuplicate) {
             val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(
@@ -47,7 +49,7 @@ class RentalService(
                 throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
         }
 
-        if (rentalHistoryRequest.count > item.count)
+        if (rentedCount > item.count)
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
 
         val rentUser = memberRepository.findById(memberId!!)
@@ -80,10 +82,9 @@ class RentalService(
             member = rentUser,
             item = item,
             rentalStatus = RentalStatus.PENDING,
+            rentedCount = rentedCount,
             rentAt = rentAt
         )
-
-        item.subtractCount(rentalHistoryRequest.count)
 
         rentalRepository.save(newRental)
 
@@ -198,18 +199,24 @@ class RentalService(
     }
 
     @Transactional
-    fun updateRentalStatus(rentalHistoryId: Long, request: RentalStatusUpdateRequest) {
+    fun updateRentalStatus(workerId: Long?, rentalHistoryId: Long, request: RentalStatusUpdateRequest) {
         val rentalHistory = rentalRepository.findById(rentalHistoryId)
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
         val renter = rentalHistory.member
 
         rentalHistory.updateStatus(request.rentalStatus)
+        val item = rentalHistory.item
+        val itemName = item.name
 
-        val itemName = rentalHistory.item.name
+        val worker = memberRepository.findById(workerId!!)
+            .orElseThrow { ApiException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
         when (rentalHistory.rentalStatus) {
             RentalStatus.CONFIRMED -> {
                 //승인
+                item.subtractCount(rentalHistory.rentedCount)
+                rentalHistory.setWorker(worker)
+
                 notificationService.sendNotification(
                     renter,
                     NotificationStatus.USER_RENTAL_APPROVED,
@@ -246,6 +253,7 @@ class RentalService(
 
             RentalStatus.RETURNED -> {
                 //반납 완료
+                item.addCount(rentalHistory.rentedCount)
                 notificationService.sendNotification(
                     renter,
                     NotificationStatus.USER_RETURN_COMPLETED,
