@@ -34,10 +34,10 @@ class TokenProvider(
 
     fun generateToken(member: Member, expiredAt: Duration): String {
         val now = Date()
-        return makeToken(Date(now.time + expiredAt.toMillis()), member.studentId, member.role)
+        return makeToken(Date(now.time + expiredAt.toMillis()), member.studentId, member.role, member.name)
     }
 
-    private fun makeToken(expiry: Date, studentId: String, role: Role): String {
+    private fun makeToken(expiry: Date, studentId: String, role: Role, name: String): String {
         val now = Date()
 
         return Jwts.builder()
@@ -47,6 +47,7 @@ class TokenProvider(
             .setExpiration(expiry)
             .setSubject(studentId)
             .claim("role", role.name)
+            .claim("name", name)
             .signWith(createSecretKey(), signatureAlgorithm)
             .compact()
     }
