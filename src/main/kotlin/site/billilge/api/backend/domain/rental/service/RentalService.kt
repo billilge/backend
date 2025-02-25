@@ -85,8 +85,6 @@ class RentalService(
             rentAt = rentAt
         )
 
-        item.subtractCount(rentedCount)
-
         rentalRepository.save(newRental)
 
         notificationService.sendNotification(
@@ -212,6 +210,7 @@ class RentalService(
         when (rentalHistory.rentalStatus) {
             RentalStatus.CONFIRMED -> {
                 //승인
+                item.subtractCount(rentalHistory.rentedCount)
                 notificationService.sendNotification(
                     renter,
                     NotificationStatus.USER_RENTAL_APPROVED,
