@@ -74,7 +74,12 @@ class NotificationService(
                 return
             }
 
-            fcmService.sendPushNotification(member.fcmToken!!, status.title, status.formattedMessage(*formatValues.toTypedArray()))
+            fcmService.sendPushNotification(
+                member.fcmToken!!,
+                status.title,
+                status.formattedMessage(*formatValues.toTypedArray()),
+                status.link
+            )
         }
     }
 
