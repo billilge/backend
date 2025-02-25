@@ -27,11 +27,6 @@ class RentalHistory(
     @Enumerated(EnumType.STRING)
     var rentalStatus: RentalStatus,
 
-    @JoinColumn(name = "worker_id", nullable =  true)
-    @ManyToOne
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    val worker: Member? = null,
-
     @Column(name = "rent_at", nullable = false)
     val rentAt: LocalDateTime,
 
@@ -46,6 +41,12 @@ class RentalHistory(
     @Column(name = "history_id", nullable = false)
     val id: Long? = null
 
+    @JoinColumn(name = "worker_id", nullable =  true)
+    @ManyToOne
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    var worker: Member? = null
+        protected set
+
     @CreatedDate
     @Column(name = "applicated_at", nullable = false)
     var applicatedAt: LocalDateTime = LocalDateTime.now()
@@ -54,5 +55,9 @@ class RentalHistory(
 
     fun updateStatus(newStatus: RentalStatus) {
         this.rentalStatus = newStatus
+    }
+
+    fun setWorker(worker: Member) {
+        this.worker = worker
     }
 }

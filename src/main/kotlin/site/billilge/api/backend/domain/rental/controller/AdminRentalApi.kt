@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -13,6 +14,7 @@ import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFi
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
+import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
 @Tag(name = "(Admin) Rental", description = "관리자용 대여 API")
 interface AdminRentalApi {
@@ -60,6 +62,7 @@ interface AdminRentalApi {
         ]
     )
     fun updateRentalStatus(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @PathVariable rentalHistoryId: Long,
         @RequestBody request: RentalStatusUpdateRequest
     ): ResponseEntity<Void>
