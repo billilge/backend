@@ -1,6 +1,8 @@
 package site.billilge.api.backend.domain.rental.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import site.billilge.api.backend.domain.item.entity.Item
@@ -18,6 +20,7 @@ class RentalHistory(
 
     @JoinColumn(name = "item_id", nullable = false)
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     val item: Item,
 
     @Column(name = "rental_status", nullable = false)
@@ -26,6 +29,7 @@ class RentalHistory(
 
     @JoinColumn(name = "worker_id", nullable =  true)
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     val worker: Member? = null,
 
     @Column(name = "rent_at", nullable = false)
