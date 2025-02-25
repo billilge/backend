@@ -215,7 +215,7 @@ class RentalService(
             RentalStatus.CONFIRMED -> {
                 //승인
                 item.subtractCount(rentalHistory.rentedCount)
-                rentalHistory.setWorker(worker)
+                rentalHistory.updateWorker(worker)
 
                 notificationService.sendNotification(
                     renter,
