@@ -203,11 +203,15 @@ class RentalService(
         val rentalHistory = rentalRepository.findById(rentalHistoryId)
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
         val renter = rentalHistory.member
+        val item = rentalHistory.item
+
+        if (request.rentalStatus == RentalStatus.CONFIRMED && item.count <= 0) {
+            throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
+        }
 
         rentalHistory.updateStatus(request.rentalStatus)
-        val item = rentalHistory.item
-        val itemName = item.name
 
+        val itemName = item.name
         val worker = memberRepository.findById(workerId!!)
             .orElseThrow { ApiException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
