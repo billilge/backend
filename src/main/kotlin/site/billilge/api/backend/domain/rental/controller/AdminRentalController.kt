@@ -2,16 +2,11 @@ package site.billilge.api.backend.domain.rental.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.ModelAttribute
-import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
+import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.service.RentalService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
@@ -25,8 +20,10 @@ class AdminRentalController(
     private val rentalService: RentalService
 ) : AdminRentalApi {
     @GetMapping("/dashboard")
-    override fun getAllDashboardApplications(): ResponseEntity<DashboardResponse> {
-        return ResponseEntity.ok(rentalService.getAllDashboardApplications())
+    override fun getAllDashboardApplications(
+        @RequestParam(required = false) rentalStatus: RentalStatus?,
+    ): ResponseEntity<DashboardResponse> {
+        return ResponseEntity.ok(rentalService.getAllDashboardApplications(rentalStatus))
     }
 
     @GetMapping

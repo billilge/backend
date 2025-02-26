@@ -9,9 +9,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
+import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
@@ -30,7 +32,9 @@ interface AdminRentalApi {
             )
         ]
     )
-    fun getAllDashboardApplications(): ResponseEntity<DashboardResponse>
+    fun getAllDashboardApplications(
+        @RequestParam(required = false) rentalStatus: RentalStatus?,
+    ): ResponseEntity<DashboardResponse>
 
     @Operation(
         summary = "모든 대여 기록 조회",
