@@ -277,7 +277,7 @@ class RentalService(
     }
 
     companion object {
-        private val DASHBOARD_STATUS = listOf(RentalStatus.PENDING, RentalStatus.RETURN_PENDING)
+        private val DASHBOARD_STATUS = listOf(RentalStatus.PENDING, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
         private val RETURN_REQUIRED_STATUS =
             listOf(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
     }
