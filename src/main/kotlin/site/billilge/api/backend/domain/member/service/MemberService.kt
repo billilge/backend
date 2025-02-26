@@ -5,6 +5,8 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.beans.factory.annotation.Value
+import site.billilge.api.backend.domain.member.dto.request.AdminLoginRequest
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.request.MemberFCMTokenRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
@@ -25,7 +27,9 @@ import java.time.Duration
 class MemberService(
     private val memberRepository: MemberRepository,
     private val tokenProvider: TokenProvider,
-    private val payerService: PayerService
+    private val payerService: PayerService,
+    @Value("\${login.admin-password}")
+    private val adminPassword: String,
 ) {
     @Transactional
     fun signUp(request: SignUpRequest): SignUpResponse {
@@ -123,9 +127,24 @@ class MemberService(
 
     @Transactional
     fun setMemberFCMToken(memberId: Long?, request: MemberFCMTokenRequest) {
-        val member = (memberRepository.findByIdOrNull(memberId!!)
-            ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND))
+        val member = memberRepository.findByIdOrNull(memberId!!)
+            ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
 
         member.updateFCMToken(request.token)
+    }
+
+    fun loginAdmin(request: AdminLoginRequest): AdminLoginResponse {
+        val member = memberRepository.findByStudentId(request.studentId)
+            ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        if (request.password != adminPassword)
+            throw ApiException(MemberErrorCode.ADMIN_PASSWORD_MISMATCH)
+
+        if (member.role != Role.ADMIN)
+            throw ApiException(MemberErrorCode.FORBIDDEN)
+
+        val accessToken = tokenProvider.generateToken(member, Duration.ofDays(30))
+
+        return AdminLoginResponse(accessToken)
     }
 }

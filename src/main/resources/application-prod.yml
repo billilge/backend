@@ -41,6 +41,7 @@ jwt:
   issuer: ${JWT_ISSUER}
 
 login:
+  admin-password: ${LOGIN_ADMIN_PASSWORD}
   redirect:
     url: ${LOGIN_REDIRECT_URL}
 
