@@ -52,6 +52,9 @@ class NotificationRepositoryCustomImpl(
                     .and(
                         notification.status.`in`(USER_TYPE)
                     )
+                    .and(
+                        notification.isRead.isFalse
+                    )
             )
             .fetchOne()?.toInt() ?: 0
     }
