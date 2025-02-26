@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import site.billilge.api.backend.domain.member.dto.request.AdminLoginRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
+import site.billilge.api.backend.domain.member.dto.response.AdminLoginResponse
 import site.billilge.api.backend.domain.member.dto.response.SignUpResponse
 import site.billilge.api.backend.domain.member.service.MemberService
 
@@ -19,6 +21,11 @@ class AuthController(
     @PostMapping("/auth/sign-up")
     override fun signUp(@RequestBody request: SignUpRequest): ResponseEntity<SignUpResponse> {
         return ResponseEntity.ok(memberService.signUp(request))
+    }
+
+    @PostMapping("/auth/admin-login")
+    override fun loginAdmin(@RequestBody request: AdminLoginRequest): ResponseEntity<AdminLoginResponse> {
+        return ResponseEntity.ok(memberService.loginAdmin(request))
     }
 
     @GetMapping("/login/oauth2/code/google")
