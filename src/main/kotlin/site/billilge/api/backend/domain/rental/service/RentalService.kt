@@ -33,7 +33,7 @@ class RentalService(
     private val notificationService: NotificationService
 ) {
     @Transactional
-    fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest) {
+    fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest, isDevMode: Boolean = false) {
         val item = itemRepository.findById(rentalHistoryRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
         val rentedCount = rentalHistoryRequest.count
@@ -66,14 +66,18 @@ class RentalService(
         )
 
         val currentKoreanTime = LocalDateTime.now(koreanZone)
-        if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
-            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
+        if (!isDevMode) {
+            if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
+                throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
+            }
         }
 
         val rentalHour = requestedRentalDateTime.hour
         val rentalMinute = requestedRentalDateTime.minute
-        if (rentalHour < 10 || rentalHour > 17) {
-            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_OUT_OF_RANGE)
+        if (!isDevMode) {
+            if (rentalHour < 10 || rentalHour > 17) {
+                throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_OUT_OF_RANGE)
+            }
         }
 
         val rentAt = requestedRentalDateTime.atZone(koreanZone).toLocalDateTime()

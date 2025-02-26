@@ -27,6 +27,16 @@ class RentalController(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @PostMapping("/dev")
+    fun createDevRental(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @RequestBody rentalHistoryRequest: RentalHistoryRequest
+    ): ResponseEntity<Void> {
+        val memberId = userAuthInfo.memberId
+        rentalService.createRental(memberId, rentalHistoryRequest, true)
+        return ResponseEntity.status(HttpStatus.CREATED).build()
+    }
+
     @GetMapping
     override fun getMemberRentalHistory(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
