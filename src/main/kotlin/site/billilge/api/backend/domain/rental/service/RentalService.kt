@@ -180,7 +180,7 @@ class RentalService(
 
     fun getAllDashboardApplications(rentalStatus: RentalStatus?): DashboardResponse {
         val rentalApplicationDetails = rentalRepository.findAllByRentalStatusIn(DASHBOARD_STATUS)
-            .filter { it.rentalStatus == rentalStatus }
+            .filter { if (rentalStatus == null) true else it.rentalStatus == rentalStatus }
             .map { DashboardResponse.RentalApplicationDetail.from(it) }
 
         return DashboardResponse(rentalApplicationDetails)
