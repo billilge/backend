@@ -9,13 +9,9 @@ class FCMService(
 ) {
     @Throws(FirebaseMessagingException::class)
     fun sendPushNotification(fcmToken: String, title: String, body: String, link: String) {
-        val notification = Notification.builder()
-            .setTitle(title)
-            .setBody(body)
-            .build()
-
         val fcmMessage = Message.builder()
-            .setNotification(notification)
+            .putData("title", title)
+            .putData("body", body)
             .putData("link", link)
             .setToken(fcmToken)
             .build()
