@@ -20,6 +20,6 @@ class FCMService(
             .setToken(fcmToken)
             .build()
 
-        firebaseMessaging.sendAsync(fcmMessage)
+        firebaseMessaging.send(fcmMessage)
     }
 }
