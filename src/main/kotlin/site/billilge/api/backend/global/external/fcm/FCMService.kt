@@ -11,7 +11,7 @@ class FCMService(
     fun sendPushNotification(fcmToken: String, title: String, body: String, link: String) {
         val fcmMessage = Message.builder()
             .putData("title", title)
-            .putData("body", body)
+            .putData("body", body.replace("\n", " "))
             .putData("link", link)
             .setToken(fcmToken)
             .build()
