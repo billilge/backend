@@ -123,4 +123,10 @@ class ItemService(
 
         return ItemFindAllResponse(items.map { ItemDetail.from(it) })
     }
+
+    fun getItemById(itemId: Long): ItemDetail {
+        val item = itemRepository.findById(itemId)
+            .orElseThrow { ApiException(ItemErrorCode.ITEM_NOT_FOUND) }
+        return ItemDetail.from(item);
+    }
 }

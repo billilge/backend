@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
+import site.billilge.api.backend.domain.item.dto.response.ItemDetail
 import site.billilge.api.backend.domain.item.service.ItemService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
@@ -48,6 +49,13 @@ class AdminItemController(
     ): ResponseEntity<Void> {
         itemService.updateItem(image, itemId, itemRequest)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/{itemId}")
+    fun getItemById(
+        @PathVariable itemId: Long
+    ): ResponseEntity<ItemDetail> {
+        return ResponseEntity.ok(itemService.getItemById(itemId))
     }
 
     @DeleteMapping("/{itemId}")
