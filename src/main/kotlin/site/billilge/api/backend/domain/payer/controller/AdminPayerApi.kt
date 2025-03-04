@@ -11,6 +11,7 @@ import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 
 @Tag(name = "(Admin) Payer", description = "관리자용 학생회비 납부자 API")
 interface AdminPayerApi {
@@ -41,7 +42,8 @@ interface AdminPayerApi {
         ]
     )
     fun getAllPayers(
-        pageableCondition: PageableCondition
+        pageableCondition: PageableCondition,
+        searchCondition: SearchCondition
 //        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
 //        @RequestParam(required = false, defaultValue = "10") size: Int,
 //        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String

@@ -13,6 +13,7 @@ import site.billilge.api.backend.domain.payer.dto.response.PayerSummary
 import site.billilge.api.backend.domain.payer.entity.Payer
 import site.billilge.api.backend.domain.payer.repository.PayerRepository
 import site.billilge.api.backend.global.dto.PageableCondition
+import site.billilge.api.backend.global.dto.SearchCondition
 
 @Service
 @Transactional(readOnly = true)
@@ -54,13 +55,13 @@ class PayerService(
         payerResults[0].update(true, studentId)
     }
 
-    fun getAllPayers(pageableCondition: PageableCondition): PayerFindAllResponse {
+    fun getAllPayers(pageableCondition: PageableCondition, searchCondition: SearchCondition): PayerFindAllResponse {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "enrollmentYear")
         )
-        val payers = payerRepository.findAll(pageRequest)
+        val payers = payerRepository.findAllByNameContaining(searchCondition.search, pageRequest)
         val payerSummaries = payers
             .map { PayerSummary.from(it) }
             .toList()
