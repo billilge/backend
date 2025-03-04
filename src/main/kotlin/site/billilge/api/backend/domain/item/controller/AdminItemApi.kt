@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
-import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
+import site.billilge.api.backend.domain.item.dto.response.ItemDetail
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ErrorResponse
@@ -114,4 +114,20 @@ interface AdminItemApi {
     fun deleteItem(
         @PathVariable itemId: Long,
     ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "물품 상세 조회",
+        description = "ID로 물품을 상세 조회하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "대여 물품 조회 성공"
+            )
+        ]
+    )
+    fun getItemById(
+        @PathVariable itemId: Long,
+    ): ResponseEntity<ItemDetail>
 }

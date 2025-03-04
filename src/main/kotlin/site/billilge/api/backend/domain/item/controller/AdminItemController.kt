@@ -52,7 +52,7 @@ class AdminItemController(
     }
 
     @GetMapping("/{itemId}")
-    fun getItemById(
+    override fun getItemById(
         @PathVariable itemId: Long
     ): ResponseEntity<ItemDetail> {
         return ResponseEntity.ok(itemService.getItemById(itemId))
