@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
@@ -93,4 +95,10 @@ interface RentalApi {
     fun getReturnRequiredHistory(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
     ) : ResponseEntity<ReturnRequiredItemFindAllResponse>
+
+    @Operation(hidden = true)
+    fun createDevRental(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
+        @org.springframework.web.bind.annotation.RequestBody rentalHistoryRequest: RentalHistoryRequest
+    ): ResponseEntity<Void>
 }

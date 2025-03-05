@@ -20,9 +20,6 @@ class AdminPayerController(
     override fun getAllPayers(
         @ModelAttribute pageableCondition: PageableCondition,
         @ModelAttribute searchCondition: SearchCondition,
-//        @RequestParam(required = false, defaultValue = "0") pageNo: Int,
-//        @RequestParam(required = false, defaultValue = "10") size: Int,
-//        @RequestParam(required = false, defaultValue = "enrollmentYear") criteria: String
     ): ResponseEntity<PayerFindAllResponse> {
         return ResponseEntity.ok(payerService.getAllPayers(pageableCondition, searchCondition))
     }

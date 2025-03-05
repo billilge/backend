@@ -28,7 +28,7 @@ class RentalController(
     }
 
     @PostMapping("/dev")
-    fun createDevRental(
+    override fun createDevRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestBody rentalHistoryRequest: RentalHistoryRequest
     ): ResponseEntity<Void> {
