@@ -96,7 +96,7 @@ interface RentalApi {
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
     ) : ResponseEntity<ReturnRequiredItemFindAllResponse>
 
-    @Operation(hidden = true)
+    //@Operation(hidden = true)
     fun createDevRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @org.springframework.web.bind.annotation.RequestBody rentalHistoryRequest: RentalHistoryRequest
