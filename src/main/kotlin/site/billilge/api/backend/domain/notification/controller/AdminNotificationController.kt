@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import site.billilge.api.backend.domain.notification.dto.response.NotificationFindAllResponse
 import site.billilge.api.backend.domain.notification.service.NotificationService
+import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
+@OnlyAdmin
 @RestController
 @RequestMapping("/admin/notifications")
 class AdminNotificationController(
