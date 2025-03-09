@@ -209,6 +209,7 @@ class RentalService(
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
         val renter = rentalHistory.member
         val item = rentalHistory.item
+        val rentedCount = rentalHistory.rentedCount
 
         if (request.rentalStatus == RentalStatus.CONFIRMED && item.count <= 0) {
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
@@ -223,7 +224,12 @@ class RentalService(
         when (rentalHistory.rentalStatus) {
             RentalStatus.CONFIRMED -> {
                 //승인
+                if (rentedCount > item.count) {
+                    throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
+                }
+
                 item.subtractCount(rentalHistory.rentedCount)
+                itemRepository.save(item)
                 rentalHistory.updateWorker(worker)
 
                 notificationService.sendNotification(
@@ -263,6 +269,7 @@ class RentalService(
             RentalStatus.RETURNED -> {
                 //반납 완료
                 item.addCount(rentalHistory.rentedCount)
+                itemRepository.save(item)
                 notificationService.sendNotification(
                     renter,
                     NotificationStatus.USER_RETURN_COMPLETED,
