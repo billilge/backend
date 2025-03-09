@@ -69,8 +69,10 @@ class NotificationService(
         notificationRepository.save(notification)
 
         if (needPush) {
+            val studentId = member.studentId
+
             if (member.fcmToken == null) {
-                log.warn { "(studentId=${member.studentId}) FCM Token is null" }
+                log.warn { "(studentId=${studentId}) FCM Token is null" }
                 return
             }
 
@@ -78,7 +80,8 @@ class NotificationService(
                 member.fcmToken!!,
                 status.title,
                 status.formattedMessage(*formatValues.toTypedArray()),
-                status.link
+                status.link,
+                studentId
             )
         }
     }
