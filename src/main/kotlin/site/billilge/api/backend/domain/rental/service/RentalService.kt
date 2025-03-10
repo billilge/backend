@@ -216,7 +216,12 @@ class RentalService(
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
         }
 
-        rentalHistory.updateStatus(request.rentalStatus)
+        val newStatus =
+            if (request.rentalStatus == RentalStatus.RENTAL && item.type == ItemType.CONSUMPTION)
+                RentalStatus.RETURNED
+            else request.rentalStatus
+
+        rentalHistory.updateStatus(newStatus)
 
         val itemName = item.name
         val worker = memberRepository.findById(workerId!!)
@@ -287,7 +292,12 @@ class RentalService(
     }
 
     companion object {
-        private val DASHBOARD_STATUS = listOf(RentalStatus.PENDING, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED, RentalStatus.CONFIRMED)
+        private val DASHBOARD_STATUS = listOf(
+            RentalStatus.PENDING,
+            RentalStatus.RETURN_PENDING,
+            RentalStatus.RETURN_CONFIRMED,
+            RentalStatus.CONFIRMED
+        )
         private val RETURN_REQUIRED_STATUS =
             listOf(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
     }

@@ -18,8 +18,6 @@ data class DashboardResponse(
         val rentalHistoryId: Long,
         @field:Schema(description = "물품 이름", example = "우산")
         val itemName: String,
-        @field:Schema(description = "물품 타입")
-        val itemType: ItemType,
         @field:Schema(description = "물품 아이콘 URL", example = "https://www.example.com/test.svg")
         val itemImageUrl: String,
         @field:Schema(description = "물품 개수", example = "10")
@@ -39,7 +37,6 @@ data class DashboardResponse(
                 return RentalApplicationDetail(
                     rentalHistoryId = rentalHistory.id!!,
                     itemName = rentalHistory.item.name,
-                    itemType = rentalHistory.item.type,
                     itemImageUrl = rentalHistory.item.imageUrl,
                     rentedCount = rentalHistory.rentedCount,
                     renterName = rentalHistory.member.name,
