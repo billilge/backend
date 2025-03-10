@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.item.repository.ItemRepository
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
@@ -268,6 +269,8 @@ class RentalService(
 
             RentalStatus.RETURNED -> {
                 //반납 완료
+                if (item.type == ItemType.CONSUMPTION) return
+
                 item.addCount(rentalHistory.rentedCount)
                 itemRepository.save(item)
                 notificationService.sendNotification(
