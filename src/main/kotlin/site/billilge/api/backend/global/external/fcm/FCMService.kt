@@ -18,6 +18,7 @@ class FCMService(
 
         try {
             firebaseMessaging.send(fcmMessage)
+            log.info { "(studentId=${studentId}) FCM Message sent." }
         } catch(exception: FirebaseMessagingException) {
             if (exception.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
                 log.error { "(studentId=${studentId}) FCM token is unregistered." }

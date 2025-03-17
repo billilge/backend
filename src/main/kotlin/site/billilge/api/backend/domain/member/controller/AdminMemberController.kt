@@ -16,7 +16,6 @@ import site.billilge.api.backend.global.dto.SearchCondition
 class AdminMemberController(
     private val memberService: MemberService
 ) : AdminMemberApi {
-
     @GetMapping
     override fun getAllMembers(
         @ModelAttribute pageableCondition: PageableCondition,
