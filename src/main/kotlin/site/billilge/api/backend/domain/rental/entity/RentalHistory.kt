@@ -31,7 +31,7 @@ class RentalHistory(
     val rentAt: LocalDateTime,
 
     @Column(name = "returned_at", nullable = true)
-    val returnedAt: LocalDateTime? = null,
+    var returnedAt: LocalDateTime? = null,
 
     @Column(name = "rented_count", nullable = false)
     val rentedCount: Int,
@@ -54,6 +54,10 @@ class RentalHistory(
 
 
     fun updateStatus(newStatus: RentalStatus) {
+        if (newStatus == RentalStatus.RETURNED) {
+            returnedAt = LocalDateTime.now()
+        }
+
         this.rentalStatus = newStatus
     }
 
