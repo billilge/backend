@@ -20,6 +20,7 @@ import site.billilge.api.backend.domain.rental.repository.RentalRepository
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
+import site.billilge.api.backend.global.utils.isWeekend
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -68,6 +69,10 @@ class RentalService(
 
         val currentKoreanTime = LocalDateTime.now(koreanZone)
         if (!isDevMode) {
+            if (requestedRentalDateTime.isWeekend) {
+                throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_WEEKEND)
+            }
+
             if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
                 throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
             }
