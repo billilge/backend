@@ -17,7 +17,7 @@ class FCMService(
             .build()
 
         try {
-            firebaseMessaging.send(fcmMessage)
+            firebaseMessaging.sendAsync(fcmMessage)
             log.info { "(studentId=${studentId}) FCM Message sent." }
         } catch(exception: FirebaseMessagingException) {
             if (exception.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
