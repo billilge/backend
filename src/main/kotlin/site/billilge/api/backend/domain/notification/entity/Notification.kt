@@ -11,9 +11,9 @@ import java.time.LocalDateTime
 @Table(name = "notifications")
 @EntityListeners(AuditingEntityListener::class)
 class Notification(
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = true)
     @ManyToOne
-    val member: Member,
+    val member: Member? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
