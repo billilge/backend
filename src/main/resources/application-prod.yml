@@ -48,6 +48,10 @@ login:
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}
 
+exam-period:
+  start-date: ${EXAM_PERIOD_START_DATE}
+  end-date: ${EXAM_PERIOD_END_DATE}
+
 cloud:
   aws:
     s3:

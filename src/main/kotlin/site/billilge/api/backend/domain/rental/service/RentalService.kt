@@ -1,11 +1,14 @@
 package site.billilge.api.backend.domain.rental.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.item.repository.ItemRepository
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
@@ -30,12 +33,24 @@ import java.time.ZoneId
 @Transactional(readOnly = true)
 class RentalService(
     private val memberRepository: MemberRepository,
+
     private val rentalRepository: RentalRepository,
+
     private val itemRepository: ItemRepository,
-    private val notificationService: NotificationService
+
+    private val notificationService: NotificationService,
+
+    @Value("\${exam-period.start-date}")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private val examPeriodStartDate: LocalDate,
+
+    @Value("\${exam-period.end-date}")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private val examPeriodEndDate: LocalDate,
 ) {
     @Transactional
     fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest, isDevMode: Boolean = false) {
+
         val item = itemRepository.findById(rentalHistoryRequest.itemId)
             .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
         val rentedCount = rentalHistoryRequest.count
@@ -60,12 +75,19 @@ class RentalService(
         if (!rentUser.isFeePaid)
             throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER)
 
+        if (isDevMode && rentUser.role != Role.ADMIN)
+            throw ApiException(MemberErrorCode.FORBIDDEN)
+
         val koreanZone = ZoneId.of("Asia/Seoul")
         val today = LocalDate.now(koreanZone)
         val requestedRentalDateTime = LocalDateTime.of(
             today,
             LocalTime.of(rentalHistoryRequest.rentalTime.hour, rentalHistoryRequest.rentalTime.minute)
         )
+
+        if ((!isDevMode) && today.isInExamPeriod) {
+            throw ApiException(RentalErrorCode.TODAY_IS_IN_EXAM_PERIOD)
+        }
 
         val currentKoreanTime = LocalDateTime.now(koreanZone)
         if (!isDevMode) {
@@ -295,6 +317,9 @@ class RentalService(
             else -> return
         }
     }
+
+    private val LocalDate.isInExamPeriod
+        get() = this in (examPeriodStartDate..examPeriodEndDate)
 
     companion object {
         private val DASHBOARD_STATUS = listOf(
