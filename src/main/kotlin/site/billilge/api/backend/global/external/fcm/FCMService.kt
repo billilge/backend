@@ -13,6 +13,11 @@ class FCMService(
             .putData("title", title)
             .putData("body", body.replace("\n", " "))
             .putData("link", link)
+            .setAndroidConfig(
+                AndroidConfig.builder()
+                    .setPriority(AndroidConfig.Priority.HIGH)
+                    .build()
+            )
             .setToken(fcmToken)
             .build()
 
