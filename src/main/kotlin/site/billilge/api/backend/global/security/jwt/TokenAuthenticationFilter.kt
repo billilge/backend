@@ -10,7 +10,6 @@ import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.ErrorResponse
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import java.io.IOException
-import java.time.LocalDateTime
 import java.util.*
 
 
@@ -31,6 +30,7 @@ class TokenAuthenticationFilter(
                 if (exception !is ApiException) return
 
                 handleException(response, exception)
+                return
             }
         }
 
@@ -43,7 +43,7 @@ class TokenAuthenticationFilter(
 
         val content = ObjectMapper().writeValueAsString(errorResponse)
 
-        response.addHeader("Content-Type", "application/json")
+        response.addHeader("Content-Type", "application/json; charset=utf-8")
         response.writer.write(content)
         response.writer.flush()
     }
