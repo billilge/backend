@@ -1,5 +1,6 @@
 package site.billilge.api.backend.global.exception
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
@@ -12,6 +13,7 @@ data class ErrorResponse(
     @field:Schema(description = "HTTP 응답 코드", example = "500")
     val status: Int,
     @field:Schema(description = "발생 시각")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val timestamp: LocalDateTime
 ) {
     companion object {
