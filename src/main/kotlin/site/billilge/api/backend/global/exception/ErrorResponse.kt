@@ -1,7 +1,7 @@
 package site.billilge.api.backend.global.exception
 
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.Instant
+import java.time.LocalDateTime
 
 @Schema
 data class ErrorResponse(
@@ -12,11 +12,11 @@ data class ErrorResponse(
     @field:Schema(description = "HTTP 응답 코드", example = "500")
     val status: Int,
     @field:Schema(description = "발생 시각")
-    val timestamp: Instant
+    val timestamp: LocalDateTime
 ) {
     companion object {
         @JvmStatic
-        fun from(errorCode: ErrorCode, now: Instant): ErrorResponse {
+        fun from(errorCode: ErrorCode, now: LocalDateTime): ErrorResponse {
             return ErrorResponse(
                 code = errorCode.name,
                 message = errorCode.message,
@@ -26,7 +26,7 @@ data class ErrorResponse(
         }
 
         @JvmStatic
-        fun from(exception: Exception, now: Instant): ErrorResponse {
+        fun from(exception: Exception, now: LocalDateTime): ErrorResponse {
             val errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR
 
             return ErrorResponse(

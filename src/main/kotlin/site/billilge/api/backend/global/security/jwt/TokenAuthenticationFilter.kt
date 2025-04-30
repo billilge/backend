@@ -10,7 +10,7 @@ import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.ErrorResponse
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import java.io.IOException
-import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -39,7 +39,7 @@ class TokenAuthenticationFilter(
 
     @Throws(IOException::class)
     private fun handleException(response: HttpServletResponse, exception: ApiException) {
-        val errorResponse = ErrorResponse.from(exception.errorCode, Instant.now())
+        val errorResponse = ErrorResponse.from(exception, LocalDateTime.now())
 
         val content = ObjectMapper().writeValueAsString(errorResponse)
 

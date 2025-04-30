@@ -6,13 +6,14 @@ import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.time.Instant
+import java.time.LocalDateTime
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
     @ExceptionHandler(ApiException::class)
     fun handleApiException(exception: ApiException): ResponseEntity<ErrorResponse> {
         val errorCode = exception.errorCode
-        val errorResponse = ErrorResponse.from(errorCode, Instant.now())
+        val errorResponse = ErrorResponse.from(errorCode, LocalDateTime.now())
         val httpStatus = errorCode.httpStatus
 
         return ResponseEntity(errorResponse, httpStatus)
@@ -20,7 +21,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException::class)
     fun handleAuthorizationDeniedException(exception: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse.from(GlobalErrorCode.FORBIDDEN, Instant.now())
+        val errorResponse = ErrorResponse.from(GlobalErrorCode.FORBIDDEN, LocalDateTime.now())
 
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
@@ -29,7 +30,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler
     fun handleDefaultException(exception: Exception): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse.from(exception, Instant.now())
+        val errorResponse = ErrorResponse.from(exception, LocalDateTime.now())
 
         exception.printStackTrace()
 

@@ -8,6 +8,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
 import site.billilge.api.backend.global.exception.ErrorResponse
 import java.time.Instant
+import java.time.LocalDateTime
 
 class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
     override fun commence(request: HttpServletRequest, response: HttpServletResponse, authException: AuthenticationException) {
@@ -18,7 +19,7 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         val objectMapper = ObjectMapper()
         response.status = HttpServletResponse.SC_UNAUTHORIZED // 401 Unauthorized
         response.contentType = MediaType.APPLICATION_JSON_VALUE
-        val error: ErrorResponse = ErrorResponse.from(exception, Instant.now())
+        val error: ErrorResponse = ErrorResponse.from(exception, LocalDateTime.now())
         response.writer.write(objectMapper.writeValueAsString(error))
     }
 }
