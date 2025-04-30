@@ -39,7 +39,7 @@ class TokenAuthenticationFilter(
 
     @Throws(IOException::class)
     private fun handleException(response: HttpServletResponse, exception: ApiException) {
-        val errorResponse = ErrorResponse.from(exception, LocalDateTime.now())
+        val errorResponse = ErrorResponse.from(exception)
 
         val content = ObjectMapper().writeValueAsString(errorResponse)
 

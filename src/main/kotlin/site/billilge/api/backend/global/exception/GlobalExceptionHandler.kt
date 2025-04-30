@@ -13,7 +13,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ApiException::class)
     fun handleApiException(exception: ApiException): ResponseEntity<ErrorResponse> {
         val errorCode = exception.errorCode
-        val errorResponse = ErrorResponse.from(errorCode, LocalDateTime.now())
+        val errorResponse = ErrorResponse.from(errorCode)
         val httpStatus = errorCode.httpStatus
 
         return ResponseEntity(errorResponse, httpStatus)
@@ -21,7 +21,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException::class)
     fun handleAuthorizationDeniedException(exception: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse.from(GlobalErrorCode.FORBIDDEN, LocalDateTime.now())
+        val errorResponse = ErrorResponse.from(GlobalErrorCode.FORBIDDEN)
 
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
@@ -30,7 +30,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler
     fun handleDefaultException(exception: Exception): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse.from(exception, LocalDateTime.now())
+        val errorResponse = ErrorResponse.from(exception)
 
         exception.printStackTrace()
 
