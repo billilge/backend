@@ -39,11 +39,12 @@ class TokenAuthenticationFilter(
 
     @Throws(IOException::class)
     private fun handleException(response: HttpServletResponse, exception: ApiException) {
-        val errorResponse = ErrorResponse.from(exception)
+        val errorResponse = ErrorResponse.from(exception.errorCode)
 
         val content = ObjectMapper().writeValueAsString(errorResponse)
 
         response.addHeader("Content-Type", "application/json; charset=utf-8")
+        response.status = exception.errorCode.httpStatus.value()
         response.writer.write(content)
         response.writer.flush()
     }
