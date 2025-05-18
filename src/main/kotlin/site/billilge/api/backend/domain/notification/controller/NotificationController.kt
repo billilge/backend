@@ -39,4 +39,13 @@ class NotificationController (
         notificationService.readNotification(memberId, notificationId)
         return ResponseEntity.ok().build()
     }
+
+    @PatchMapping("/all")
+    override fun readAllNotifications(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo
+    ): ResponseEntity<Void> {
+        val memberId = userAuthInfo.memberId
+        notificationService.readAllNotifications(memberId)
+        return ResponseEntity.ok().build()
+    }
 }
