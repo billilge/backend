@@ -16,4 +16,5 @@ enum class RentalErrorCode(
     INVALID_RENTAL_TIME_WEEKEND("주말에는 대여가 불가능합니다.", HttpStatus.BAD_REQUEST),
     RENTAL_NOT_FOUND("대여 기록을 찾을 수 없습니다", HttpStatus.NOT_FOUND),
     MEMBER_IS_NOT_PAYER("복지물품을 대여하려면 먼저 학생회비를 납부해주세요.", HttpStatus.FORBIDDEN),
+    TODAY_IS_IN_EXAM_PERIOD("시험기간(04.14.~04.28.)에는\n대여가 불가능합니다.\n양해 부탁드립니다.", HttpStatus.BAD_REQUEST),
 }
