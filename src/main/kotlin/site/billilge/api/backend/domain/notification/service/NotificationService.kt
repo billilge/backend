@@ -125,5 +125,12 @@ class NotificationService(
         return NotificationCountResponse(count)
     }
 
+    @Transactional
+    fun readAllNotifications(memberId: Long?) {
+        notificationRepository
+            .findAllUserNotificationsByMemberId(memberId!!)
+            .forEach { it.readNotification() }
+    }
+
     private fun Notification.isAdminStatus(): Boolean = status.name.contains("ADMIN", true)
 }
