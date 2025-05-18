@@ -1,6 +1,7 @@
 package site.billilge.api.backend.global.security.jwt
 
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Header
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -11,6 +12,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
+import site.billilge.api.backend.global.exception.ApiException
+import site.billilge.api.backend.global.exception.GlobalErrorCode
 import site.billilge.api.backend.global.security.UserAuthInfoService
 import java.security.Key
 import java.time.Duration
@@ -62,7 +65,9 @@ class TokenProvider(
                 .parseClaimsJws(token)
 
             return true
-        } catch (e: Exception) {
+        } catch (e: ExpiredJwtException) {
+            throw ApiException(GlobalErrorCode.EXPIRED_ACCESS_TOKEN)
+        } catch (e1: Exception) {
             return false
         }
     }

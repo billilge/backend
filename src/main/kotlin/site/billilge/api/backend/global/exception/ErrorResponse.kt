@@ -1,7 +1,8 @@
 package site.billilge.api.backend.global.exception
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.Instant
+import java.time.LocalDateTime
 
 @Schema
 data class ErrorResponse(
@@ -10,30 +11,26 @@ data class ErrorResponse(
     @field:Schema(description = "오류 메시지", example = "오류 메시지입니다.")
     val message: String,
     @field:Schema(description = "HTTP 응답 코드", example = "500")
-    val status: Int,
-    @field:Schema(description = "발생 시각")
-    val timestamp: Instant
+    val status: Int
 ) {
     companion object {
         @JvmStatic
-        fun from(errorCode: ErrorCode, now: Instant): ErrorResponse {
+        fun from(errorCode: ErrorCode): ErrorResponse {
             return ErrorResponse(
                 code = errorCode.name,
                 message = errorCode.message,
-                status = errorCode.httpStatus.value(),
-                timestamp = now
+                status = errorCode.httpStatus.value()
             )
         }
 
         @JvmStatic
-        fun from(exception: Exception, now: Instant): ErrorResponse {
+        fun from(exception: Exception): ErrorResponse {
             val errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR
 
             return ErrorResponse(
                 code = errorCode.name,
                 message = exception.message ?: errorCode.message,
-                status = errorCode.httpStatus.value(),
-                timestamp = now
+                status = errorCode.httpStatus.value()
             )
         }
     }
