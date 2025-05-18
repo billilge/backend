@@ -28,8 +28,8 @@ data class DashboardResponse(
         val renterStudentId: String,
         @field:Schema(description = "대여 상태", example = "PENDING")
         val status: RentalStatus,
-        @field:Schema(description = "신청일")
-        val applicatedAt: LocalDateTime
+        @field:Schema(description = "대여 시각")
+        val rentAt: LocalDateTime?,
     ) {
         companion object {
             @JvmStatic
@@ -42,7 +42,7 @@ data class DashboardResponse(
                     renterName = rentalHistory.member.name,
                     renterStudentId = rentalHistory.member.studentId,
                     status = rentalHistory.rentalStatus,
-                    applicatedAt = rentalHistory.applicatedAt
+                    rentAt = rentalHistory.rentAt
                 )
             }
         }
