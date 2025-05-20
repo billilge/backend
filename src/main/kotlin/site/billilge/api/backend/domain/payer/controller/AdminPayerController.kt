@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
+import site.billilge.api.backend.domain.payer.dto.response.PayerExcelFileResponse
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.domain.payer.service.PayerService
 import site.billilge.api.backend.global.annotation.OnlyAdmin
@@ -34,5 +35,10 @@ class AdminPayerController(
     override fun deletePayers(@RequestBody request: PayerDeleteRequest): ResponseEntity<Void> {
         payerService.deletePayers(request)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/excel")
+    fun getExcelFileUrl(): ResponseEntity<PayerExcelFileResponse> {
+        return ResponseEntity.ok(payerService.getExcelFileUrl());
     }
 }

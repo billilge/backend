@@ -1,5 +1,7 @@
 package site.billilge.api.backend.domain.payer.service
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -8,18 +10,25 @@ import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
+import site.billilge.api.backend.domain.payer.dto.response.PayerExcelFileResponse
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.domain.payer.dto.response.PayerSummary
 import site.billilge.api.backend.domain.payer.entity.Payer
+import site.billilge.api.backend.domain.payer.event.PayerAddEvent
+import site.billilge.api.backend.domain.payer.event.PayerDeleteEvent
 import site.billilge.api.backend.domain.payer.repository.PayerRepository
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
+import java.time.LocalDate
 
 @Service
 @Transactional(readOnly = true)
 class PayerService(
+    private val publisher: ApplicationEventPublisher,
     private val payerRepository: PayerRepository,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    @Value("\${cloud.aws.s3.base-url}")
+    private val s3BaseUrl: String,
 ) {
     fun isPayer(name: String, studentId: String): Boolean {
         val enrollmentYear = studentId.substring(0, 4)
@@ -71,6 +80,7 @@ class PayerService(
 
     @Transactional
     fun addPayers(request: PayerRequest) {
+        val newPayers = mutableListOf<Payer>()
         request.payers.forEach { payerItem ->
             val name = payerItem.name
             val studentId = payerItem.studentId
@@ -87,11 +97,15 @@ class PayerService(
                     this.registered = registered
                 }
 
-                payerRepository.save(payer)
+                newPayers.add(payer)
             }
 
             registeredMember?.isFeePaid = true
         }
+
+        payerRepository.saveAll(newPayers)
+
+        publisher.publishEvent(PayerAddEvent(newPayers.map { it.id }))
     }
 
     @Transactional
@@ -106,5 +120,12 @@ class PayerService(
             }
 
         payerRepository.deleteAllById(request.payerIds)
+
+        publisher.publishEvent(PayerDeleteEvent(request.payerIds))
+    }
+
+    fun getExcelFileUrl(): PayerExcelFileResponse {
+        val currentYear = LocalDate.now().year
+        return PayerExcelFileResponse(s3BaseUrl + "/payers/payer_${currentYear}.xlsx")
     }
 }
