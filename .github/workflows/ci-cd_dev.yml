@@ -1,10 +1,10 @@
-name: CI/CD with Gradle and Docker
+name: Development Server CI/CD with Gradle and Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
   build-docker-image:
@@ -34,7 +34,7 @@ jobs:
       # Docker 관련 작업들은 push 시에만 실행되도록 설정
       - name: docker image build
         if: github.event_name == 'push'
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/billilge:latest .
+        run: docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_USERNAME }}/billilge-dev:latest .
 
       # DockerHub 로그인
       - name: docker login
@@ -47,7 +47,7 @@ jobs:
       # Docker Hub 이미지 푸시
       - name: docker Hub push
         if: github.event_name == 'push'
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/billilge:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/billilge-dev:latest
 
   run-docker-image-on-ec2:
     needs: build-docker-image
@@ -56,13 +56,13 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: docker pull
-        run: sudo docker pull ${{ secrets.DOCKER_USERNAME }}/billilge:latest
+        run: sudo docker pull ${{ secrets.DOCKER_USERNAME }}/billilge-dev:latest
 
       - name: docker stop container
         run: sudo docker stop springboot || true
 
       - name: docker run new container
-        run: sudo docker run --env-file /home/ubuntu/billilge.env --name springboot --rm -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/billilge:latest
+        run: sudo docker run --env-file /home/ubuntu/billilge.env --name springboot --rm -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/billilge-dev:latest
 
       - name: delete old docker image
         run: sudo docker image prune -f
