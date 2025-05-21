@@ -42,8 +42,7 @@ jwt:
 
 login:
   admin-password: ${LOGIN_ADMIN_PASSWORD}
-  redirect:
-    url: ${LOGIN_REDIRECT_URL}
+  redirect-url: ${LOGIN_REDIRECT_URL}
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}
