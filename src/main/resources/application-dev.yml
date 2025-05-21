@@ -16,6 +16,7 @@ spring:
           google:
             client-id: ${DEV_OAUTH2_GOOGLE_CLIENT_ID}
             client-secret: ${DEV_OAUTH2_GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${DEV_SWAGGER_SERVER_BASE_URL}/login/oauth2/code/google
             scope:
               - email
               - profile
@@ -42,8 +43,7 @@ jwt:
 
 login:
   admin-password: ${DEV_LOGIN_ADMIN_PASSWORD}
-  redirect:
-    url: ${DEV_LOGIN_REDIRECT_URL}
+  redirect-url: ${DEV_LOGIN_REDIRECT_URL}
 
 cors:
   allowed-origins: ${DEV_CORS_ALLOWED_ORIGINS}
