@@ -57,15 +57,11 @@ class ExcelGenerator {
     }
 
     private fun fillData(sheet: SXSSFSheet, rows: List<ExcelRow>, columnSize: Int) {
-        sheet.trackAllColumnsForAutoSizing()
-
         rows.forEachIndexed { index, excelRow ->
             val row = sheet.createRow(index + 1)
             excelRow.data.forEachIndexed { propertyIndex, property ->
                 row.createCell(propertyIndex).setCellValue(property)
             }
         }
-
-        repeat(columnSize) { col -> sheet.autoSizeColumn(col) }
     }
 }
