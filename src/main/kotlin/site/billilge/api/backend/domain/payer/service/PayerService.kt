@@ -1,7 +1,5 @@
 package site.billilge.api.backend.domain.payer.service
 
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -10,25 +8,25 @@ import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
-import site.billilge.api.backend.domain.payer.dto.response.PayerExcelFileResponse
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.domain.payer.dto.response.PayerSummary
 import site.billilge.api.backend.domain.payer.entity.Payer
-import site.billilge.api.backend.domain.payer.event.PayerAddEvent
-import site.billilge.api.backend.domain.payer.event.PayerDeleteEvent
 import site.billilge.api.backend.domain.payer.repository.PayerRepository
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
-import java.time.LocalDate
+import site.billilge.api.backend.global.utils.ExcelGenerator
+import site.billilge.api.backend.global.utils.ExcelRow
+import java.io.ByteArrayInputStream
+import java.time.Year
 
 @Service
 @Transactional(readOnly = true)
 class PayerService(
-    private val publisher: ApplicationEventPublisher,
     private val payerRepository: PayerRepository,
+
     private val memberRepository: MemberRepository,
-    @Value("\${cloud.aws.s3.base-url}")
-    private val s3BaseUrl: String,
+
+    private val excelGenerator: ExcelGenerator
 ) {
     fun isPayer(name: String, studentId: String): Boolean {
         val enrollmentYear = studentId.substring(0, 4)
@@ -104,15 +102,12 @@ class PayerService(
         }
 
         payerRepository.saveAll(newPayers)
-
-        publisher.publishEvent(PayerAddEvent(newPayers.map { it.id }))
     }
 
     @Transactional
     fun deletePayers(request: PayerDeleteRequest) {
         val payerStudentIds = payerRepository.findAllByIds(request.payerIds)
             .mapNotNull { it.studentId }
-            .toList()
 
         memberRepository.findAllByStudentIds(payerStudentIds)
             .forEach { member ->
@@ -120,12 +115,22 @@ class PayerService(
             }
 
         payerRepository.deleteAllById(request.payerIds)
-
-        publisher.publishEvent(PayerDeleteEvent(request.payerIds))
     }
 
-    fun getExcelFileUrl(): PayerExcelFileResponse {
-        val currentYear = LocalDate.now().year
-        return PayerExcelFileResponse(s3BaseUrl + "/payers/payer_${currentYear}.xlsx")
+    fun createPayerExcel(): ByteArrayInputStream {
+        val startYear = 2015
+        val currentYear = Year.now().value
+        val headerTitles = arrayOf("이름", "학번")
+        val sheetData = mutableMapOf<String, Pair<Array<String>, List<ExcelRow>>>()
+
+        for (year in startYear..currentYear) {
+            val yearText = "$year"
+            val payersByYearExcelRow = payerRepository.findAllByEnrollmentYear(yearText)
+                .map { payer -> ExcelRow(payer.name, payer.studentId ?: "${yearText}XXXX") }
+
+            sheetData.put(yearText, headerTitles to payersByYearExcelRow)
+        }
+
+        return excelGenerator.generateByMultipleSheets(sheetData)
     }
 }
