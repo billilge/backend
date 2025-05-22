@@ -17,18 +17,21 @@ class ExcelGenerator {
     ): ByteArrayInputStream {
         val workbook = SXSSFWorkbook()
 
-        sheetData.forEach { (sheetName, sheetContent) ->
-            val (headerTitles, rows) = sheetContent
-            val sheet = workbook.createSheet(sheetName)
-            styleHeaders(workbook, sheet, headerTitles)
-            fillData(sheet, rows, headerTitles.size)
+        try {
+            sheetData.forEach { (sheetName, sheetContent) ->
+                val (headerTitles, rows) = sheetContent
+                val sheet = workbook.createSheet(sheetName)
+                styleHeaders(workbook, sheet, headerTitles)
+                fillData(sheet, rows, headerTitles.size)
+            }
+
+            val out = ByteArrayOutputStream()
+            workbook.write(out)
+            return ByteArrayInputStream(out.toByteArray())
+        } finally {
+            workbook.dispose()
+            workbook.close()
         }
-
-        val out = ByteArrayOutputStream()
-        workbook.write(out)
-        workbook.close()
-
-        return ByteArrayInputStream(out.toByteArray())
     }
 
     private fun styleHeaders(workbook: SXSSFWorkbook, sheet: SXSSFSheet, headerTitles: Array<String>) {

@@ -3,6 +3,7 @@ package site.billilge.api.backend.domain.payer.controller
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
@@ -42,7 +43,7 @@ class AdminPayerController(
     }
 
     @GetMapping("/excel")
-    fun createPayerExcel(): ResponseEntity<InputStreamResource> {
+    override fun createPayerExcel(): ResponseEntity<InputStreamResource> {
         val excel = payerService.createPayerExcel()
         val currentDate = LocalDate.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
@@ -51,9 +52,11 @@ class AdminPayerController(
                 .filename("kmusw_payers_${dateFormatter.format(currentDate)}.xlsx")
                 .build()
         }
+        val excelMediaType = MediaType.valueOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         return ResponseEntity.ok()
             .headers(headers)
+            .contentType(excelMediaType)
             .body(InputStreamResource((excel)))
     }
 }

@@ -1,9 +1,12 @@
 package site.billilge.api.backend.domain.payer.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.core.io.InputStreamResource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -62,4 +65,22 @@ interface AdminPayerApi {
         ]
     )
     fun deletePayers(@RequestBody request: PayerDeleteRequest): ResponseEntity<Void>
+
+    @Operation(
+        summary = "학생회비 납부자 Excel 파일 다운로드",
+        description = "학생회비 납부자 데이터를 엑셀 파일로 다운받을 수 있는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "파일 다운로드 성공",
+                content = [Content(
+                    mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    schema = Schema(type = "string", format = "binary")
+                )]
+            )
+        ]
+    )
+    fun createPayerExcel(): ResponseEntity<InputStreamResource>
 }
