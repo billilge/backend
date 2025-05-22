@@ -49,6 +49,11 @@ class ExcelGenerator {
             cell.setCellValue(title)
             cell.cellStyle = headerCellStyle
         }
+
+        //이름 칸 너비
+        sheet.setColumnWidth(0, 10)
+        //학번 칸 너비
+        sheet.setColumnWidth(1, 16)
     }
 
     private fun fillData(sheet: SXSSFSheet, rows: List<ExcelRow>, columnSize: Int) {

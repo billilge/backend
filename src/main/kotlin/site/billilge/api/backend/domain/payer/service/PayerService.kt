@@ -123,7 +123,7 @@ class PayerService(
         val headerTitles = arrayOf("이름", "학번")
         val sheetData = mutableMapOf<String, Pair<Array<String>, List<ExcelRow>>>()
 
-        for (year in startYear..currentYear) {
+        for (year in currentYear downTo startYear) {
             val yearText = "$year"
             val payersByYearExcelRow = payerRepository.findAllByEnrollmentYear(yearText)
                 .map { payer -> ExcelRow(payer.name, payer.studentId ?: "${yearText}XXXX") }
