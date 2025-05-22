@@ -22,7 +22,7 @@ class ExcelGenerator {
                 val (headerTitles, rows) = sheetContent
                 val sheet = workbook.createSheet(sheetName)
                 styleHeaders(workbook, sheet, headerTitles)
-                fillData(sheet, rows, headerTitles.size)
+                fillData(sheet, rows)
             }
 
             val out = ByteArrayOutputStream()
@@ -51,12 +51,12 @@ class ExcelGenerator {
         }
 
         //이름 칸 너비
-        sheet.setColumnWidth(0, 10)
+        sheet.setColumnWidth(0, 10 * 256)
         //학번 칸 너비
-        sheet.setColumnWidth(1, 16)
+        sheet.setColumnWidth(1, 16 * 256)
     }
 
-    private fun fillData(sheet: SXSSFSheet, rows: List<ExcelRow>, columnSize: Int) {
+    private fun fillData(sheet: SXSSFSheet, rows: List<ExcelRow>) {
         rows.forEachIndexed { index, excelRow ->
             val row = sheet.createRow(index + 1)
             excelRow.data.forEachIndexed { propertyIndex, property ->
