@@ -14,12 +14,19 @@ import site.billilge.api.backend.domain.payer.entity.Payer
 import site.billilge.api.backend.domain.payer.repository.PayerRepository
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
+import site.billilge.api.backend.global.utils.ExcelGenerator
+import site.billilge.api.backend.global.utils.ExcelRow
+import java.io.ByteArrayInputStream
+import java.time.Year
 
 @Service
 @Transactional(readOnly = true)
 class PayerService(
     private val payerRepository: PayerRepository,
-    private val memberRepository: MemberRepository
+
+    private val memberRepository: MemberRepository,
+
+    private val excelGenerator: ExcelGenerator
 ) {
     fun isPayer(name: String, studentId: String): Boolean {
         val enrollmentYear = studentId.substring(0, 4)
@@ -71,6 +78,7 @@ class PayerService(
 
     @Transactional
     fun addPayers(request: PayerRequest) {
+        val newPayers = mutableListOf<Payer>()
         request.payers.forEach { payerItem ->
             val name = payerItem.name
             val studentId = payerItem.studentId
@@ -87,18 +95,19 @@ class PayerService(
                     this.registered = registered
                 }
 
-                payerRepository.save(payer)
+                newPayers.add(payer)
             }
 
             registeredMember?.isFeePaid = true
         }
+
+        payerRepository.saveAll(newPayers)
     }
 
     @Transactional
     fun deletePayers(request: PayerDeleteRequest) {
         val payerStudentIds = payerRepository.findAllByIds(request.payerIds)
             .mapNotNull { it.studentId }
-            .toList()
 
         memberRepository.findAllByStudentIds(payerStudentIds)
             .forEach { member ->
@@ -106,5 +115,22 @@ class PayerService(
             }
 
         payerRepository.deleteAllById(request.payerIds)
+    }
+
+    fun createPayerExcel(): ByteArrayInputStream {
+        val startYear = 2015
+        val currentYear = Year.now().value
+        val headerTitles = arrayOf("이름", "학번")
+        val sheetData = mutableMapOf<String, Pair<Array<String>, List<ExcelRow>>>()
+
+        for (year in startYear..currentYear) {
+            val yearText = "$year"
+            val payersByYearExcelRow = payerRepository.findAllByEnrollmentYear(yearText)
+                .map { payer -> ExcelRow(payer.name, payer.studentId ?: "${yearText}XXXX") }
+
+            sheetData.put(yearText, headerTitles to payersByYearExcelRow)
+        }
+
+        return excelGenerator.generateByMultipleSheets(sheetData)
     }
 }
