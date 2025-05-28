@@ -13,6 +13,7 @@ import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import site.billilge.api.backend.domain.notification.service.NotificationService
+import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.*
@@ -129,16 +130,63 @@ class RentalService(
             true
         )
 
-        notificationService.sendNotificationToAdmin(
-            NotificationStatus.ADMIN_RENTAL_APPLY,
-            listOf(
-                rentUser.name,
-                rentUser.studentId,
-                "${String.format("%02d", rentalHour)}:${String.format("%02d", rentalMinute)}",
-                item.name
-            ),
-            true
+        if (!isDevMode) {
+            notificationService.sendNotificationToAdmin(
+                NotificationStatus.ADMIN_RENTAL_APPLY,
+                listOf(
+                    rentUser.name,
+                    rentUser.studentId,
+                    "${String.format("%02d", rentalHour)}:${String.format("%02d", rentalMinute)}",
+                    item.name
+                ),
+                true
+            )
+        }
+    }
+
+    @Transactional
+    fun createRentalByAdmin(request: AdminRentalHistoryRequest) {
+
+        val item = itemRepository.findById(request.itemId)
+            .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
+        val rentedCount = request.count
+
+        if (rentedCount > item.count)
+            throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
+
+        val rentUser = memberRepository.findById(request.memberId)
+            .orElseThrow { ApiException(RentalErrorCode.MEMBER_NOT_FOUND) }
+
+        if (!rentUser.isFeePaid)
+            throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER)
+
+        val koreanZone = ZoneId.of("Asia/Seoul")
+        val today = LocalDate.now(koreanZone)
+        val requestedRentalDateTime = LocalDateTime.of(
+            today,
+            LocalTime.of(request.rentalTime.hour, request.rentalTime.minute)
         )
+
+        val rentAt = requestedRentalDateTime.atZone(koreanZone).toLocalDateTime()
+
+        val newRental = RentalHistory(
+            member = rentUser,
+            item = item,
+            rentalStatus = if (item.type == ItemType.RENTAL) RentalStatus.RENTAL else RentalStatus.RETURNED,
+            rentedCount = rentedCount,
+            rentAt = rentAt
+        ).apply {
+            if (rentalStatus == RentalStatus.RETURNED) {
+                returnedAt = LocalDateTime.now()
+            }
+        }
+
+        rentalRepository.save(newRental)
+    }
+
+    @Transactional
+    fun deleteRentalHistory(rentalHistoryId: Long) {
+        rentalRepository.deleteById(rentalHistoryId)
     }
 
     fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): RentalHistoryFindAllResponse {
