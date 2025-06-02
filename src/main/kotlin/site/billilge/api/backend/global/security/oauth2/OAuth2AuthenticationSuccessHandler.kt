@@ -23,7 +23,7 @@ class OAuth2AuthenticationSuccessHandler(
 
     private val memberRepository: MemberRepository,
 
-    @Value("\${login.redirect.url}") private val redirectUrl: String,
+    @Value("\${login.redirect-url}") private val redirectUrl: String,
 ) : SimpleUrlAuthenticationSuccessHandler() {
     override fun onAuthenticationSuccess(
         request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?

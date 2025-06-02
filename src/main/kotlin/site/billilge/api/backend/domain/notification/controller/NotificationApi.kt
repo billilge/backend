@@ -62,4 +62,19 @@ interface NotificationApi {
     fun getNotificationCount(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo
     ): ResponseEntity<NotificationCountResponse>
+
+    @Operation(
+        summary = "알림 모두 읽음 처리",
+        description = "사용자가 알림을 모두 읽음 처리합니다."
+    )
+    @ApiResponses(
+        value =  [
+            ApiResponse(responseCode = "200", description = "알림 모두 읽음 처리 완료"),
+            ApiResponse(responseCode = "403", description = "권한이 없는 사용자"),
+            ApiResponse(responseCode = "404", description = "알림을 찾을 수 없음")
+        ]
+    )
+    fun readAllNotifications(
+        @AuthenticationPrincipal userAuthInfo: UserAuthInfo
+    ): ResponseEntity<Void>
 }

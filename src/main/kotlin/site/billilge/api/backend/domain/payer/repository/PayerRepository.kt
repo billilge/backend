@@ -15,4 +15,6 @@ interface PayerRepository : JpaRepository<Payer, Long?> {
 
     @Query("SELECT p FROM Payer p WHERE p.name LIKE CONCAT('%', :name, '%')")
     fun findAllByNameContaining(@Param("name") name: String, pageable: Pageable): Page<Payer>
+
+    fun findAllByEnrollmentYear(enrollmentYear: String): List<Payer>
 }

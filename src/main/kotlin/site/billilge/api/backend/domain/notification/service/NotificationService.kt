@@ -30,7 +30,8 @@ class NotificationService(
 
         return NotificationFindAllResponse(
             notifications
-                .map { NotificationDetail.from(it) })
+                .map { NotificationDetail.from(it) }
+        )
     }
 
     @Transactional
@@ -38,7 +39,9 @@ class NotificationService(
         val notification = notificationRepository.findById(notificationId)
             .orElseThrow { ApiException(NotificationErrorCode.NOTIFICATION_NOT_FOUND) }
 
-        if (notification.member.id != memberId) {
+        if (notification.isAdminStatus()) return;
+
+        if (notification.member?.id != memberId) {
             throw ApiException(NotificationErrorCode.NOTIFICATION_ACCESS_DENIED)
         }
 
@@ -58,7 +61,7 @@ class NotificationService(
         member: Member,
         status: NotificationStatus,
         formatValues: List<String>,
-        needPush: Boolean = false
+        needPush: Boolean = false,
     ) {
         val notification = Notification(
             member = member,
@@ -69,23 +72,32 @@ class NotificationService(
         notificationRepository.save(notification)
 
         if (needPush) {
-            val studentId = member.studentId
-
-            if (member.fcmToken == null) {
-                log.warn { "(studentId=${studentId}) FCM Token is null" }
-                return
-            }
-
-            fcmService.sendPushNotification(
-                member.fcmToken!!,
-                status.title,
-                status.formattedMessage(*formatValues.toTypedArray()),
-                status.link,
-                studentId
-            )
+            sendPushNotification(member, status, formatValues)
         }
     }
 
+    private fun sendPushNotification(
+        member: Member,
+        status: NotificationStatus,
+        formatValues: List<String>,
+    ) {
+        val studentId = member.studentId
+
+        if (member.fcmToken == null) {
+            log.warn { "(studentId=${studentId}) FCM Token is null" }
+            return
+        }
+
+        fcmService.sendPushNotification(
+            member.fcmToken!!,
+            status.title,
+            status.formattedMessage(*formatValues.toTypedArray()),
+            status.link,
+            studentId
+        )
+    }
+
+    @Transactional
     fun sendNotificationToAdmin(
         type: NotificationStatus,
         formatValues: List<String>,
@@ -93,8 +105,17 @@ class NotificationService(
     ) {
         val admins = memberRepository.findAllByRole(Role.ADMIN)
 
-        admins.forEach { admin ->
-            sendNotification(admin, type, formatValues, needPush)
+        val notification = Notification(
+            status = type,
+            formatValues = formatValues.joinToString(",")
+        )
+
+        notificationRepository.save(notification)
+
+        if (needPush) {
+            admins.forEach { admin ->
+                sendPushNotification(admin, type, formatValues)
+            }
         }
     }
 
@@ -103,4 +124,13 @@ class NotificationService(
 
         return NotificationCountResponse(count)
     }
+
+    @Transactional
+    fun readAllNotifications(memberId: Long?) {
+        notificationRepository
+            .findAllUserNotificationsByMemberId(memberId!!)
+            .forEach { it.readNotification() }
+    }
+
+    private fun Notification.isAdminStatus(): Boolean = status.name.contains("ADMIN", true)
 }
