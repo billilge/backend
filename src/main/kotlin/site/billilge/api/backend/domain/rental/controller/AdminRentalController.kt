@@ -47,7 +47,7 @@ class AdminRentalController(
     }
 
     @PostMapping
-    fun addRentalHistory(
+    override fun addRentalHistory(
         @RequestBody request: AdminRentalHistoryRequest
     ): ResponseEntity<Void> {
         rentalService.createRentalByAdmin(request)
@@ -55,7 +55,7 @@ class AdminRentalController(
     }
 
     @DeleteMapping("/{rentalHistoryId}")
-    fun deleteRentalHistory(@PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
+    override fun deleteRentalHistory(@PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
         rentalService.deleteRentalHistory(rentalHistoryId)
         return ResponseEntity.ok().build()
     }

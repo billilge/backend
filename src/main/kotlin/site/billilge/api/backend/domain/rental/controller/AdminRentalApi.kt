@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
@@ -70,4 +71,34 @@ interface AdminRentalApi {
         @PathVariable rentalHistoryId: Long,
         @RequestBody request: RentalStatusUpdateRequest
     ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "대여 기록 추가 (관리자용)",
+        description = "임의로 대여 기록을 추가하는 관리자용 API"
+    )
+    @ApiResponses(
+        value =  [
+            ApiResponse(
+                responseCode =  "200",
+                description = "대여 기록 추가 성공"
+            )
+        ]
+    )
+    fun addRentalHistory(
+        @RequestBody request: AdminRentalHistoryRequest
+    ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "대여 기록 삭제 (관리자용)",
+        description = "대여 기록을 임의로 삭제하는 관리자용 API"
+    )
+    @ApiResponses(
+        value =  [
+            ApiResponse(
+                responseCode =  "200",
+                description = "대여 기록 삭제 성공"
+            )
+        ]
+    )
+    fun deleteRentalHistory(@PathVariable rentalHistoryId: Long): ResponseEntity<Void>
 }
