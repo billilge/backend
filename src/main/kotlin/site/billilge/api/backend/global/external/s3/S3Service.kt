@@ -17,13 +17,17 @@ class S3Service(
     @Value("\${cloud.aws.s3.bucket}")
     val bucket: String,
     @Value("\${cloud.aws.s3.base-url}")
-    val baseUrl: String
+    val baseUrl: String,
+    @Value("\${spring.profiles.active}")
+    val activeProfile: String,
 ) {
     fun uploadImageFile(imageFile: MultipartFile, newFileName: String = "items/${UUID.randomUUID()}"): String? {
         val originalName = imageFile.originalFilename ?: return null
 
+
         val ext = originalName.substring(originalName.lastIndexOf("."))
-        val changedName = newFileName + ext
+        val fileNameByProfile = if (activeProfile == "dev") "dev/${newFileName}" else newFileName
+        val changedName = fileNameByProfile + ext
 
         val metadata = ObjectMetadata().apply {
             contentType = imageFile.contentType
