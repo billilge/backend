@@ -3,6 +3,8 @@ package site.billilge.api.backend.domain.rental.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryRequest
+import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
@@ -41,6 +43,20 @@ class AdminRentalController(
         @RequestBody request: RentalStatusUpdateRequest
     ): ResponseEntity<Void> {
         rentalService.updateRentalStatus(userAuthInfo.memberId, rentalHistoryId, request)
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping
+    override fun addRentalHistory(
+        @RequestBody request: AdminRentalHistoryRequest
+    ): ResponseEntity<Void> {
+        rentalService.createRentalByAdmin(request)
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/{rentalHistoryId}")
+    override fun deleteRentalHistory(@PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
+        rentalService.deleteRentalHistory(rentalHistoryId)
         return ResponseEntity.ok().build()
     }
 }
