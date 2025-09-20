@@ -47,7 +47,7 @@ dependencies {
 
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
-    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+    implementation("io.awspring.cloud:spring-cloud-starter-aws:2.4.4")
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     implementation("org.apache.tika:tika-core:2.9.2")
     implementation("org.apache.tika:tika-parsers-standard-package:2.9.2")
