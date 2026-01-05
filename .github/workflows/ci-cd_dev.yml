@@ -34,7 +34,7 @@ jobs:
       # Docker 관련 작업들은 push 시에만 실행되도록 설정
       - name: docker image build
         if: github.event_name == 'push'
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/billilge-dev:latest .
+        run: docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_USERNAME }}/billilge-dev:latest .
 
       # DockerHub 로그인
       - name: docker login
