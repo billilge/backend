@@ -1,7 +1,7 @@
 # Dockerfile
 
-# jdk17 Image Start
-FROM openjdk:17
+# jdk21 Image Start
+FROM eclipse-temurin:21-jre
 
 # jar 파일 복제
 COPY build/libs/*.jar app.jar
