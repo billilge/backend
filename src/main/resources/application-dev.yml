@@ -3,10 +3,10 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:mysql://${DEV_DB_URL}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_URL}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DEV_DB_USERNAME}
-    password: ${DEV_DB_PASSWORD}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   security:
     oauth2:
@@ -14,9 +14,9 @@ spring:
         registration:
           # 구글 로그인 추가
           google:
-            client-id: ${DEV_OAUTH2_GOOGLE_CLIENT_ID}
-            client-secret: ${DEV_OAUTH2_GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${DEV_SWAGGER_SERVER_BASE_URL}/login/oauth2/code/google
+            client-id: ${OAUTH2_GOOGLE_CLIENT_ID}
+            client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${SWAGGER_SERVER_BASE_URL}/login/oauth2/code/google
             scope:
               - email
               - profile
@@ -38,33 +38,33 @@ spring:
 
 
 jwt:
-  secret_key: ${DEV_JWT_SECRET_KEY}
-  issuer: ${DEV_JWT_ISSUER}
+  secret_key: ${JWT_SECRET_KEY}
+  issuer: ${JWT_ISSUER}
 
 login:
-  admin-password: ${DEV_LOGIN_ADMIN_PASSWORD}
-  redirect-url: ${DEV_LOGIN_REDIRECT_URL}
+  admin-password: ${LOGIN_ADMIN_PASSWORD}
+  redirect-url: ${LOGIN_REDIRECT_URL}
 
 cors:
-  allowed-origins: ${DEV_CORS_ALLOWED_ORIGINS}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
 
 exam-period:
-  start-date: ${DEV_EXAM_PERIOD_START_DATE}
-  end-date: ${DEV_EXAM_PERIOD_END_DATE}
+  start-date: ${EXAM_PERIOD_START_DATE}
+  end-date: ${EXAM_PERIOD_END_DATE}
 
 cloud:
   aws:
     s3:
-      bucket: ${DEV_S3_BUCKET}
-      base-url: ${DEV_S3_BASE_URL}
+      bucket: ${S3_BUCKET}
+      base-url: ${S3_BASE_URL}
     credentials:
-      access-key: ${DEV_S3_ACCESS_KEY}
-      secret-key: ${DEV_S3_SECRET_KEY}
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
     region:
-      static: us-west-2
+      static: ap-northeast-2
     stack:
       auto: false
 
 swagger:
   server:
-    base-url: ${DEV_SWAGGER_SERVER_BASE_URL}
+    base-url: ${SWAGGER_SERVER_BASE_URL}
