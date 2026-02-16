@@ -69,6 +69,14 @@ class MemberService(
     }
 
     @Transactional
+    fun updateAdminRole(memberId: Long, role: Role) {
+        val member = memberRepository.findByIdOrNull(memberId)
+            ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        member.updateRole(role)
+    }
+
+    @Transactional
     fun addAdmins(memberIds: List<Long>, role: Role) {
         memberRepository.findAllByIds(memberIds)
             .forEach { member ->

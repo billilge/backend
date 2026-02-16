@@ -3,6 +3,7 @@ package site.billilge.api.backend.domain.member.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
+import site.billilge.api.backend.domain.member.dto.request.AdminRoleUpdateRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.MemberFindAllResponse
 import site.billilge.api.backend.domain.member.facade.AdminMemberFacade
@@ -31,6 +32,16 @@ class AdminMemberController(
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<AdminFindAllResponse> {
         return ResponseEntity.ok(adminMemberFacade.getAdminList(pageableCondition, searchCondition))
+    }
+
+    @OnlyAdmin
+    @PatchMapping("/{memberId}/admins")
+    override fun updateAdminRole(
+        @PathVariable memberId: Long,
+        @RequestBody request: AdminRoleUpdateRequest
+    ): ResponseEntity<Void> {
+        adminMemberFacade.updateAdminRole(memberId, request)
+        return ResponseEntity.ok().build()
     }
 
     @OnlyAdmin
