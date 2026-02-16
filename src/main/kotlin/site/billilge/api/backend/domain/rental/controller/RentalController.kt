@@ -9,6 +9,7 @@ import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAll
 import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.facade.RentalFacade
+import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
 @RestController
@@ -27,6 +28,7 @@ class RentalController(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @OnlyAdmin
     @PostMapping("/dev")
     override fun createDevRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,

@@ -27,7 +27,7 @@ class AdminMemberFacade(
     }
 
     fun addAdmins(request: AdminRequest) {
-        memberService.addAdmins(request.memberIds)
+        memberService.addAdmins(request.memberIds, request.role)
     }
 
     fun deleteAdmins(request: AdminRequest) {

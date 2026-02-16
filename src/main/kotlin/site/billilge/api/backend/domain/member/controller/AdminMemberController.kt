@@ -6,13 +6,14 @@ import site.billilge.api.backend.domain.member.dto.request.AdminRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.MemberFindAllResponse
 import site.billilge.api.backend.domain.member.facade.AdminMemberFacade
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 
 @RestController
 @RequestMapping("admin/members")
-@OnlyAdmin
+@OnlyAdmin(roles = [Role.ADMIN, Role.GA, Role.WORKER])
 class AdminMemberController(
     private val adminMemberFacade: AdminMemberFacade
 ) : AdminMemberApi {
@@ -32,12 +33,14 @@ class AdminMemberController(
         return ResponseEntity.ok(adminMemberFacade.getAdminList(pageableCondition, searchCondition))
     }
 
+    @OnlyAdmin
     @PostMapping("/admins")
     override fun addAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
         adminMemberFacade.addAdmins(request)
         return ResponseEntity.ok().build()
     }
 
+    @OnlyAdmin
     @DeleteMapping("/admins")
     override fun deleteAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
         adminMemberFacade.deleteAdmins(request)

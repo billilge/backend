@@ -1,6 +1,6 @@
 package site.billilge.api.backend.global.annotation
 
-import org.springframework.security.access.prepost.PreAuthorize
+import site.billilge.api.backend.domain.member.enums.Role
 
 @Target(
     AnnotationTarget.FUNCTION,
@@ -11,5 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 @Retention(
     AnnotationRetention.RUNTIME
 )
-@PreAuthorize("hasRole('ROLE_ADMIN')")
-annotation class OnlyAdmin
+annotation class OnlyAdmin(
+    val roles: Array<Role> = [Role.ADMIN]
+)
