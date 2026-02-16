@@ -9,13 +9,14 @@ import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
 import site.billilge.api.backend.domain.item.facade.AdminItemFacade
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 
 @RestController
 @RequestMapping("/admin/items")
-@OnlyAdmin
+@OnlyAdmin(roles = [Role.ADMIN, Role.GA, Role.WORKER])
 class AdminItemController(
     private val adminItemFacade: AdminItemFacade
 ) : AdminItemApi {
@@ -32,6 +33,7 @@ class AdminItemController(
         )
     }
 
+    @OnlyAdmin
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun addItem(
         @RequestPart image: MultipartFile,
@@ -41,6 +43,7 @@ class AdminItemController(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @OnlyAdmin
     @PutMapping("/{itemId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun updateItem(
         @PathVariable itemId: Long,
@@ -58,6 +61,7 @@ class AdminItemController(
         return ResponseEntity.ok(adminItemFacade.getItemById(itemId))
     }
 
+    @OnlyAdmin
     @DeleteMapping("/{itemId}")
     override fun deleteItem(@PathVariable itemId: Long): ResponseEntity<Void> {
         adminItemFacade.deleteItem(itemId)

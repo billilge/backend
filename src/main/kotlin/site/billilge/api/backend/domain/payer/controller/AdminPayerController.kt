@@ -10,6 +10,7 @@ import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
 import site.billilge.api.backend.domain.payer.facade.AdminPayerFacade
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
@@ -18,7 +19,7 @@ import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/admin/members/payers")
-@OnlyAdmin
+@OnlyAdmin(roles = [Role.ADMIN, Role.GA])
 class AdminPayerController(
     private val adminPayerFacade: AdminPayerFacade
 ) : AdminPayerApi {

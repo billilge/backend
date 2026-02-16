@@ -9,6 +9,7 @@ import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFi
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.facade.AdminRentalFacade
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
@@ -16,7 +17,7 @@ import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
 @RestController
 @RequestMapping("/admin/rentals")
-@OnlyAdmin
+@OnlyAdmin(roles = [Role.ADMIN, Role.GA, Role.WORKER])
 class AdminRentalController(
     private val adminRentalFacade: AdminRentalFacade
 ) : AdminRentalApi {
@@ -53,6 +54,7 @@ class AdminRentalController(
         return ResponseEntity.ok().build()
     }
 
+    @OnlyAdmin
     @DeleteMapping("/{rentalHistoryId}")
     override fun deleteRentalHistory(@PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
         adminRentalFacade.deleteRentalHistory(rentalHistoryId)

@@ -125,7 +125,7 @@ class MemberService(
         if (password != adminPassword)
             throw ApiException(MemberErrorCode.ADMIN_PASSWORD_MISMATCH)
 
-        if (member.role != Role.ADMIN)
+        if (member.role !in listOf(Role.ADMIN, Role.GA, Role.WORKER))
             throw ApiException(MemberErrorCode.FORBIDDEN)
 
         return tokenProvider.generateToken(member, Duration.ofDays(30))
