@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
 import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
 import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
-import site.billilge.api.backend.domain.payer.service.PayerService
+import site.billilge.api.backend.domain.payer.facade.AdminPayerFacade
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
@@ -20,31 +20,31 @@ import java.time.format.DateTimeFormatter
 @RequestMapping("/admin/members/payers")
 @OnlyAdmin
 class AdminPayerController(
-    private val payerService: PayerService
+    private val adminPayerFacade: AdminPayerFacade
 ) : AdminPayerApi {
     @GetMapping
     override fun getAllPayers(
         @ModelAttribute pageableCondition: PageableCondition,
         @ModelAttribute searchCondition: SearchCondition,
     ): ResponseEntity<PayerFindAllResponse> {
-        return ResponseEntity.ok(payerService.getAllPayers(pageableCondition, searchCondition))
+        return ResponseEntity.ok(adminPayerFacade.getAllPayers(pageableCondition, searchCondition))
     }
 
     @PostMapping
     override fun addPayers(@RequestBody request: PayerRequest): ResponseEntity<Void> {
-        payerService.addPayers(request)
+        adminPayerFacade.addPayers(request)
         return ResponseEntity.ok().build()
     }
 
     @DeleteMapping
     override fun deletePayers(@RequestBody request: PayerDeleteRequest): ResponseEntity<Void> {
-        payerService.deletePayers(request)
+        adminPayerFacade.deletePayers(request)
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/excel")
     override fun createPayerExcel(): ResponseEntity<InputStreamResource> {
-        val excel = payerService.createPayerExcel()
+        val excel = adminPayerFacade.createPayerExcel()
         val currentDate = LocalDate.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
         val headers = HttpHeaders().apply {

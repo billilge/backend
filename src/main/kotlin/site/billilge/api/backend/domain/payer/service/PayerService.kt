@@ -1,15 +1,12 @@
 package site.billilge.api.backend.domain.payer.service
 
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.repository.MemberRepository
-import site.billilge.api.backend.domain.payer.dto.request.PayerDeleteRequest
-import site.billilge.api.backend.domain.payer.dto.request.PayerRequest
-import site.billilge.api.backend.domain.payer.dto.response.PayerFindAllResponse
-import site.billilge.api.backend.domain.payer.dto.response.PayerSummary
 import site.billilge.api.backend.domain.payer.entity.Payer
 import site.billilge.api.backend.domain.payer.repository.PayerRepository
 import site.billilge.api.backend.global.dto.PageableCondition
@@ -62,26 +59,19 @@ class PayerService(
         payerResults[0].update(true, studentId)
     }
 
-    fun getAllPayers(pageableCondition: PageableCondition, searchCondition: SearchCondition): PayerFindAllResponse {
+    fun getAllPayers(pageableCondition: PageableCondition, searchCondition: SearchCondition): Page<Payer> {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "enrollmentYear")
         )
-        val payers = payerRepository.findAllByNameContaining(searchCondition.search, pageRequest)
-        val payerSummaries = payers
-            .map { PayerSummary.from(it) }
-            .toList()
-
-        return PayerFindAllResponse(payerSummaries, payers.totalPages)
+        return payerRepository.findAllByNameContaining(searchCondition.search, pageRequest)
     }
 
     @Transactional
-    fun addPayers(request: PayerRequest) {
+    fun addPayers(payers: List<Pair<String, String>>) {
         val newPayers = mutableListOf<Payer>()
-        request.payers.forEach { payerItem ->
-            val name = payerItem.name
-            val studentId = payerItem.studentId
+        payers.forEach { (name, studentId) ->
             val enrollmentYear = studentId.substring(0, 4)
             val registeredMember = memberRepository.findByStudentIdAndName(studentId, name)
             val registered = registeredMember != null
@@ -105,8 +95,8 @@ class PayerService(
     }
 
     @Transactional
-    fun deletePayers(request: PayerDeleteRequest) {
-        val payerStudentIds = payerRepository.findAllByIds(request.payerIds)
+    fun deletePayers(payerIds: List<Long>) {
+        val payerStudentIds = payerRepository.findAllByIds(payerIds)
             .mapNotNull { it.studentId }
 
         memberRepository.findAllByStudentIds(payerStudentIds)
@@ -114,7 +104,7 @@ class PayerService(
                 member.isFeePaid = false
             }
 
-        payerRepository.deleteAllById(request.payerIds)
+        payerRepository.deleteAllById(payerIds)
     }
 
     fun createPayerExcel(): ByteArrayInputStream {

@@ -8,21 +8,21 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
-import site.billilge.api.backend.domain.item.dto.response.AdminItemDetail
+import site.billilge.api.backend.domain.item.repository.dto.ItemWithRentCountQueryResult
 import site.billilge.api.backend.domain.item.entity.QItem
 import site.billilge.api.backend.domain.rental.entity.QRentalHistory
 
 class ItemRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
 ) : ItemRepositoryCustom {
-    override fun findAllAsAdminItemDetailByKeyword(keyword: String, pageable: Pageable): Page<AdminItemDetail> {
+    override fun findAllAsAdminItemDetailByKeyword(keyword: String, pageable: Pageable): Page<ItemWithRentCountQueryResult> {
         val item = QItem.item
         val rentalHistory = QRentalHistory.rentalHistory
 
         val contents = queryFactory
             .select(
                 Projections.constructor(
-                    AdminItemDetail::class.java,
+                    ItemWithRentCountQueryResult::class.java,
                     item.id.`as`("itemId"),
                     item.name.`as`("itemName"),
                     item.type.`as`("itemType"),

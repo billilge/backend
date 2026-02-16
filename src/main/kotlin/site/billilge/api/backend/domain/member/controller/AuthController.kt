@@ -11,21 +11,21 @@ import site.billilge.api.backend.domain.member.dto.request.AdminLoginRequest
 import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminLoginResponse
 import site.billilge.api.backend.domain.member.dto.response.SignUpResponse
-import site.billilge.api.backend.domain.member.service.MemberService
+import site.billilge.api.backend.domain.member.facade.AuthFacade
 
 @RestController
 @RequestMapping
 class AuthController(
-    private val memberService: MemberService
+    private val authFacade: AuthFacade
 ) : AuthApi {
     @PostMapping("/auth/sign-up")
     override fun signUp(@RequestBody request: SignUpRequest): ResponseEntity<SignUpResponse> {
-        return ResponseEntity.ok(memberService.signUp(request))
+        return ResponseEntity.ok(authFacade.signUp(request))
     }
 
     @PostMapping("/auth/admin-login")
     override fun loginAdmin(@RequestBody request: AdminLoginRequest): ResponseEntity<AdminLoginResponse> {
-        return ResponseEntity.ok(memberService.loginAdmin(request))
+        return ResponseEntity.ok(authFacade.loginAdmin(request))
     }
 
     @GetMapping("/login/oauth2/code/google")
