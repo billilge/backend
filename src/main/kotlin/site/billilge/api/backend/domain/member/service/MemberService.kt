@@ -69,10 +69,10 @@ class MemberService(
     }
 
     @Transactional
-    fun addAdmins(memberIds: List<Long>) {
+    fun addAdmins(memberIds: List<Long>, role: Role) {
         memberRepository.findAllByIds(memberIds)
             .forEach { member ->
-                member.updateRole(Role.ADMIN)
+                member.updateRole(role)
             }
     }
 
