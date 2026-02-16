@@ -1,16 +1,12 @@
 package site.billilge.api.backend.domain.member.service
 
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.beans.factory.annotation.Value
-import site.billilge.api.backend.domain.member.dto.request.AdminLoginRequest
-import site.billilge.api.backend.domain.member.dto.request.AdminRequest
-import site.billilge.api.backend.domain.member.dto.request.MemberFCMTokenRequest
-import site.billilge.api.backend.domain.member.dto.request.SignUpRequest
-import site.billilge.api.backend.domain.member.dto.response.*
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.global.exception.ApiException
@@ -32,15 +28,10 @@ class MemberService(
     private val adminPassword: String,
 ) {
     @Transactional
-    fun signUp(request: SignUpRequest): SignUpResponse {
-        val email = request.email
-
+    fun signUp(email: String, studentId: String, name: String): String {
         if (memberRepository.existsByEmail(email)) {
             throw ApiException(MemberErrorCode.EMAIL_ALREADY_EXISTS)
         }
-
-        val name = request.name
-        val studentId = request.studentId
 
         if (memberRepository.existsByStudentIdAndName(studentId, name)) {
             val member = memberRepository.findByStudentId(studentId)
@@ -48,9 +39,7 @@ class MemberService(
             member?.let {
                 it.updateEmail(email)
 
-                return SignUpResponse(
-                    tokenProvider.generateToken(it, Duration.ofDays(30))
-                )
+                return tokenProvider.generateToken(it, Duration.ofDays(30))
             }
         }
 
@@ -67,37 +56,29 @@ class MemberService(
         memberRepository.save(member)
         payerService.updatePayerInfo(member)
 
-        val accessToken = tokenProvider.generateToken(member, Duration.ofDays(30))
-
-        return SignUpResponse(accessToken)
+        return tokenProvider.generateToken(member, Duration.ofDays(30))
     }
 
-    fun getAdminList(pageableCondition: PageableCondition, searchCondition: SearchCondition): AdminFindAllResponse {
+    fun getAdminList(pageableCondition: PageableCondition, searchCondition: SearchCondition): Page<Member> {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
         )
-        val adminList = memberRepository.findAllByRoleAndNameContaining(Role.ADMIN, searchCondition.search, pageRequest)
-        val totalPage = adminList.totalPages
-        val adminDetails = adminList
-            .map { AdminMemberDetail.from(it) }
-            .toList()
-
-        return AdminFindAllResponse(adminDetails, totalPage)
+        return memberRepository.findAllByRoleAndNameContaining(Role.ADMIN, searchCondition.search, pageRequest)
     }
 
     @Transactional
-    fun addAdmins(request: AdminRequest) {
-        memberRepository.findAllByIds(request.memberIds)
+    fun addAdmins(memberIds: List<Long>) {
+        memberRepository.findAllByIds(memberIds)
             .forEach { member ->
                 member.updateRole(Role.ADMIN)
             }
     }
 
     @Transactional
-    fun deleteAdmins(request: AdminRequest) {
-        memberRepository.findAllByIds(request.memberIds)
+    fun deleteAdmins(memberIds: List<Long>) {
+        memberRepository.findAllByIds(memberIds)
             .forEach { member ->
                 member.updateRole(Role.USER)
             }
@@ -106,45 +87,47 @@ class MemberService(
     fun getAllMembers(
         pageableCondition: PageableCondition,
         searchCondition: SearchCondition
-    ): MemberFindAllResponse {
+    ): Page<Member> {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
         )
 
-        val members = if (searchCondition.search.isEmpty()) {
+        return if (searchCondition.search.isEmpty()) {
             memberRepository.findAll(pageRequest)
         } else {
             memberRepository.findAllByNameContaining(searchCondition.search, pageRequest)
         }
-
-        val memberDetails = members
-            .map { MemberDetail.from(it) }
-
-        return MemberFindAllResponse(memberDetails.toList(), members.totalPages)
     }
 
     @Transactional
-    fun setMemberFCMToken(memberId: Long?, request: MemberFCMTokenRequest) {
+    fun setMemberFCMToken(memberId: Long?, token: String) {
         val member = memberRepository.findByIdOrNull(memberId!!)
             ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-        member.updateFCMToken(request.token)
+        member.updateFCMToken(token)
     }
 
-    fun loginAdmin(request: AdminLoginRequest): AdminLoginResponse {
-        val member = memberRepository.findByStudentId(request.studentId)
+    fun findById(memberId: Long): Member {
+        return memberRepository.findByIdOrNull(memberId)
+            ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
+    }
+
+    fun findAllByRole(role: Role): List<Member> {
+        return memberRepository.findAllByRole(role)
+    }
+
+    fun loginAdmin(studentId: String, password: String): String {
+        val member = memberRepository.findByStudentId(studentId)
             ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-        if (request.password != adminPassword)
+        if (password != adminPassword)
             throw ApiException(MemberErrorCode.ADMIN_PASSWORD_MISMATCH)
 
         if (member.role != Role.ADMIN)
             throw ApiException(MemberErrorCode.FORBIDDEN)
 
-        val accessToken = tokenProvider.generateToken(member, Duration.ofDays(30))
-
-        return AdminLoginResponse(accessToken)
+        return tokenProvider.generateToken(member, Duration.ofDays(30))
     }
 }
