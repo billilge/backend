@@ -2,6 +2,7 @@ package site.billilge.api.backend.domain.member.facade
 
 import org.springframework.stereotype.Component
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
+import site.billilge.api.backend.domain.member.dto.request.AdminRoleUpdateRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.AdminMemberDetail
 import site.billilge.api.backend.domain.member.dto.response.MemberDetail
@@ -24,6 +25,10 @@ class AdminMemberFacade(
         val adminList = memberService.getAdminList(pageableCondition, searchCondition)
         val adminDetails = adminList.map { AdminMemberDetail.from(it) }.toList()
         return AdminFindAllResponse(adminDetails, adminList.totalPages)
+    }
+
+    fun updateAdminRole(memberId: Long, request: AdminRoleUpdateRequest) {
+        memberService.updateAdminRole(memberId, request.role)
     }
 
     fun addAdmins(request: AdminRequest) {
