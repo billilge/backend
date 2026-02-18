@@ -1,6 +1,7 @@
 package site.billilge.api.backend.domain.configvalue.facade
 
 import org.springframework.stereotype.Component
+import site.billilge.api.backend.domain.configvalue.dto.request.ChangeAdminPasswordRequest
 import site.billilge.api.backend.domain.configvalue.dto.request.ConfigValueBulkUpdateRequest
 import site.billilge.api.backend.domain.configvalue.dto.request.ConfigValueUpdateRequest
 import site.billilge.api.backend.domain.configvalue.dto.response.ConfigValueDetail
@@ -26,5 +27,9 @@ class ConfigValueFacade(
 
     fun updateAll(request: ConfigValueBulkUpdateRequest) {
         request.configValues.forEach { configValueService.upsert(it.key, it.value) }
+    }
+
+    fun changeAdminPassword(request: ChangeAdminPasswordRequest) {
+        configValueService.changeAdminPassword(request.currentPassword, request.newPassword)
     }
 }

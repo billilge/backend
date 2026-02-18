@@ -3,6 +3,7 @@ package site.billilge.api.backend.domain.configvalue.service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.configvalue.entity.ConfigValue
+import site.billilge.api.backend.domain.configvalue.enums.ConfigValueKeys
 import site.billilge.api.backend.domain.configvalue.exception.ConfigValueErrorCode
 import site.billilge.api.backend.domain.configvalue.repository.ConfigValueRepository
 import site.billilge.api.backend.global.exception.ApiException
@@ -38,5 +39,14 @@ class ConfigValueService(
         } else {
             configValueRepository.save(ConfigValue(key = key, value = value))
         }
+    }
+
+    @Transactional
+    fun changeAdminPassword(currentPassword: String, newPassword: String) {
+        val configValue = getByKey(ConfigValueKeys.ADMIN_PASSWORD.key)
+        if (configValue.value != currentPassword) {
+            throw ApiException(ConfigValueErrorCode.ADMIN_PASSWORD_MISMATCH)
+        }
+        configValue.updateValue(newPassword)
     }
 }

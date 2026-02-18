@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import site.billilge.api.backend.domain.configvalue.dto.request.ChangeAdminPasswordRequest
 import site.billilge.api.backend.domain.configvalue.dto.request.ConfigValueBulkUpdateRequest
 import site.billilge.api.backend.domain.configvalue.dto.request.ConfigValueUpdateRequest
 import site.billilge.api.backend.domain.configvalue.dto.response.ConfigValueDetail
@@ -58,4 +59,16 @@ interface AdminConfigValueApi {
         ]
     )
     fun updateAll(@RequestBody request: ConfigValueBulkUpdateRequest): ResponseEntity<Void>
+
+    @Operation(
+        summary = "관리자 비밀번호 변경",
+        description = "현재 비밀번호를 검증 후 새 비밀번호로 변경하는 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            ApiResponse(responseCode = "400", description = "현재 비밀번호가 일치하지 않습니다.")
+        ]
+    )
+    fun changeAdminPassword(@RequestBody request: ChangeAdminPasswordRequest): ResponseEntity<Void>
 }
