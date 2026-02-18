@@ -1,12 +1,12 @@
 package site.billilge.api.backend.domain.rental.service
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import site.billilge.api.backend.domain.configvalue.enums.ConfigValueKeys
+import site.billilge.api.backend.domain.configvalue.service.ConfigValueService
 import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.member.entity.Member
@@ -30,16 +30,8 @@ import java.time.ZoneId
 @Transactional(readOnly = true)
 class RentalService(
     private val rentalRepository: RentalRepository,
-
     private val notificationService: NotificationService,
-
-    @Value("\${exam-period.start-date}")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private val examPeriodStartDate: LocalDate,
-
-    @Value("\${exam-period.end-date}")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private val examPeriodEndDate: LocalDate,
+    private val configValueService: ConfigValueService,
 ) {
     @Transactional
     fun createRental(rentUser: Member, item: Item, count: Int, rentAt: LocalDateTime, ignoreDuplicate: Boolean, isDevMode: Boolean = false) {
@@ -307,7 +299,14 @@ class RentalService(
     }
 
     private val LocalDate.isInExamPeriod
-        get() = this in (examPeriodStartDate..examPeriodEndDate)
+        get(): Boolean {
+            val configMap = configValueService.getMapByKeys(
+                listOf(ConfigValueKeys.EXAM_PERIOD_START_DATE.key, ConfigValueKeys.EXAM_PERIOD_END_DATE.key)
+            )
+            val startDate = LocalDate.parse(configMap[ConfigValueKeys.EXAM_PERIOD_START_DATE.key] ?: return false)
+            val endDate = LocalDate.parse(configMap[ConfigValueKeys.EXAM_PERIOD_END_DATE.key] ?: return false)
+            return this in (startDate..endDate)
+        }
 
     companion object {
         private val DASHBOARD_STATUS = listOf(

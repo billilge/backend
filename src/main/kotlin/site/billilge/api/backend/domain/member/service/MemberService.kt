@@ -6,7 +6,8 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.beans.factory.annotation.Value
+import site.billilge.api.backend.domain.configvalue.enums.ConfigValueKeys
+import site.billilge.api.backend.domain.configvalue.service.ConfigValueService
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
 import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.global.exception.ApiException
@@ -24,8 +25,7 @@ class MemberService(
     private val memberRepository: MemberRepository,
     private val tokenProvider: TokenProvider,
     private val payerService: PayerService,
-    @Value("\${login.admin-password}")
-    private val adminPassword: String,
+    private val configValueService: ConfigValueService,
 ) {
     @Transactional
     fun signUp(email: String, studentId: String, name: String): String {
@@ -130,7 +130,7 @@ class MemberService(
         val member = memberRepository.findByStudentId(studentId)
             ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-        if (password != adminPassword)
+        if (password != configValueService.getValueByKey(ConfigValueKeys.ADMIN_PASSWORD.key))
             throw ApiException(MemberErrorCode.ADMIN_PASSWORD_MISMATCH)
 
         if (member.role !in listOf(Role.ADMIN, Role.GA, Role.WORKER))
@@ -138,4 +138,5 @@ class MemberService(
 
         return tokenProvider.generateToken(member, Duration.ofDays(30))
     }
+
 }
