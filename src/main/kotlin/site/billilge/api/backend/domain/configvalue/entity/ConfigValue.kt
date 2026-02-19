@@ -3,7 +3,7 @@ package site.billilge.api.backend.domain.configvalue.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "config_value")
+@Table(name = "admin_config_values")
 class ConfigValue(
     @Column(nullable = false, unique = true)
     val key: String,
