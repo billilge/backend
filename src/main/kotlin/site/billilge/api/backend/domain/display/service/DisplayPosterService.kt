@@ -16,6 +16,10 @@ class DisplayPosterService(
         return displayPosterRepository.findAll()
     }
 
+    fun getActivePosters(): List<DisplayPoster> {
+        return displayPosterRepository.findByIsActiveTrue()
+    }
+
     @Transactional
     fun addPoster(imageUrl: String, title: String) {
         val poster = DisplayPoster(
