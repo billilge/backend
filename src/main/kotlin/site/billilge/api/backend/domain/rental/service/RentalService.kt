@@ -82,8 +82,9 @@ class RentalService(
 
     @Transactional
     fun createRentalByAdmin(rentUser: Member, item: Item, count: Int, rentAt: LocalDateTime) {
-        validatePayer(rentUser)
         validateStock(count, item.count)
+
+        if (!rentUser.isFeePaid) throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER_ADMIN)
 
         val newRental = RentalHistory(
             member = rentUser,
