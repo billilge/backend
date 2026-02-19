@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
+import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ErrorResponse
@@ -130,4 +131,20 @@ interface AdminItemApi {
     fun getItemById(
         @PathVariable itemId: Long,
     ): ResponseEntity<ItemDetail>
+
+    @Operation(
+        summary = "물품 이름 검색",
+        description = "물품 이름으로 물품을 검색하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "물품 검색 성공"
+            )
+        ]
+    )
+    fun searchItems(
+        @ModelAttribute searchCondition: SearchCondition
+    ): ResponseEntity<ItemFindAllResponse>
 }

@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
+import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.domain.item.facade.AdminItemFacade
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
@@ -66,5 +67,12 @@ class AdminItemController(
     override fun deleteItem(@PathVariable itemId: Long): ResponseEntity<Void> {
         adminItemFacade.deleteItem(itemId)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/search")
+    override fun searchItems(
+        @ModelAttribute searchCondition: SearchCondition
+    ): ResponseEntity<ItemFindAllResponse> {
+        return ResponseEntity.ok(adminItemFacade.searchItems(searchCondition))
     }
 }

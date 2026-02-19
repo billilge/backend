@@ -6,6 +6,7 @@ import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemDetail
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
+import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.domain.item.service.ItemService
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
@@ -40,6 +41,11 @@ class AdminItemFacade(
     fun getItemById(itemId: Long): ItemDetail {
         val item = itemService.getItemById(itemId)
         return ItemDetail.from(item)
+    }
+
+    fun searchItems(searchCondition: SearchCondition): ItemFindAllResponse {
+        val items = itemService.searchItems(searchCondition)
+        return ItemFindAllResponse(items.map { ItemDetail.from(it) })
     }
 
     fun deleteItem(itemId: Long): Boolean {
