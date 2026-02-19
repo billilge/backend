@@ -2,6 +2,7 @@ package site.billilge.api.backend.domain.member.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import site.billilge.api.backend.domain.member.entity.Member
+import site.billilge.api.backend.domain.member.enums.Role
 
 @Schema
 data class AdminMemberDetail(
@@ -10,7 +11,9 @@ data class AdminMemberDetail(
     @field:Schema(description = "관리자 이름", example = "황수민")
     val name: String,
     @field:Schema(description = "관리자 학번", example = "20211234")
-    val studentId: String
+    val studentId: String,
+    @field:Schema(description = "관리자 역할", example = "ADMIN")
+    val role: Role
 ) {
     companion object {
         @JvmStatic
@@ -18,7 +21,8 @@ data class AdminMemberDetail(
             return AdminMemberDetail(
                 memberId = member.id!!,
                 name = member.name,
-                studentId = member.studentId
+                studentId = member.studentId,
+                role = member.role
             )
         }
     }
