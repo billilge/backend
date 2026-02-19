@@ -5,9 +5,9 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "admin_config_values")
 class ConfigValue(
-    @Column(nullable = false, unique = true)
+    @Column(name = "config_key", nullable = false, unique = true)
     val key: String,
-    @Column(nullable = false)
+    @Column(name = "config_value", nullable = false)
     var value: String,
 ) {
     @Id
