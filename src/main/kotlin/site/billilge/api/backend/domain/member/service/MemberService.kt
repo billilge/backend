@@ -65,7 +65,8 @@ class MemberService(
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
         )
-        return memberRepository.findAllByRoleAndNameContaining(Role.ADMIN, searchCondition.search, pageRequest)
+        val adminRoles = listOf(Role.ADMIN, Role.WORKER, Role.GA)
+        return memberRepository.findAllByRoleInAndNameContaining(adminRoles, searchCondition.search, pageRequest)
     }
 
     @Transactional
