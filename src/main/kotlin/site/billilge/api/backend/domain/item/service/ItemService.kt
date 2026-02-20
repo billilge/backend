@@ -15,13 +15,13 @@ import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
-import site.billilge.api.backend.global.external.s3.S3Service
+import site.billilge.api.backend.global.external.FileStorageService
 
 @Service
 @Transactional(readOnly = true)
 class ItemService(
     private val itemRepository: ItemRepository,
-    private val s3Service: S3Service,
+    private val fileStorageService: FileStorageService,
 ) {
     fun getAllItems(): List<Item> {
         return itemRepository.findAll()
@@ -46,7 +46,7 @@ class ItemService(
 
         checkImageIsSvg(image)
 
-        val imageUrl = s3Service.uploadImageFile(image)
+        val imageUrl = fileStorageService.uploadImageFile(image)
             ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
 
         val newItem = Item(
@@ -70,7 +70,7 @@ class ItemService(
             imageUrl = item.imageUrl
         } else {
             checkImageIsSvg(image)
-            imageUrl = s3Service.uploadImageFile(image)
+            imageUrl = fileStorageService.uploadImageFile(image)
                 ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
         }
 
@@ -99,7 +99,7 @@ class ItemService(
         }
 
         if (isEntityDeleted) {
-            s3Service.deleteImageFile(imageUrl)
+            fileStorageService.deleteImageFile(imageUrl)
             return true
         }
 
