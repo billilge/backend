@@ -8,13 +8,13 @@ import site.billilge.api.backend.domain.display.dto.response.DisplayPosterFindAl
 import site.billilge.api.backend.domain.display.service.DisplayPosterService
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
-import site.billilge.api.backend.global.external.s3.S3Service
+import site.billilge.api.backend.global.external.FileStorageService
 import java.util.*
 
 @Component
 class DisplayPosterFacade(
     private val displayPosterService: DisplayPosterService,
-    private val s3Service: S3Service,
+    private val fileStorageService: FileStorageService,
 ) {
     fun getAllPosters(): DisplayPosterFindAllResponse {
         val posters = displayPosterService.getAllPosters()
@@ -24,14 +24,14 @@ class DisplayPosterFacade(
     }
 
     fun addPoster(image: MultipartFile, request: DisplayPosterRequest) {
-        val imageUrl = s3Service.uploadImageFile(image, "posters/${UUID.randomUUID()}")
+        val imageUrl = fileStorageService.uploadImageFile(image, "posters/${UUID.randomUUID()}")
             ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
         displayPosterService.addPoster(imageUrl, request.title)
     }
 
     fun updatePoster(posterId: Long, image: MultipartFile?, request: DisplayPosterRequest) {
         val imageUrl = if (image != null && !image.isEmpty) {
-            s3Service.uploadImageFile(image, "posters/${UUID.randomUUID()}")
+            fileStorageService.uploadImageFile(image, "posters/${UUID.randomUUID()}")
                 ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
         } else {
             null
