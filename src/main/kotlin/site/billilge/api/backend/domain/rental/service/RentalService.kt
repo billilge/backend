@@ -84,7 +84,7 @@ class RentalService(
     }
 
     @Transactional
-    fun createRentalByAdmin(rentUser: Member, item: Item, count: Int, rentAt: LocalDateTime) {
+    fun createRentalByAdmin(worker: Member, rentUser: Member, item: Item, count: Int, rentAt: LocalDateTime) {
         validateStock(count, item.count)
 
         if (!rentUser.isFeePaid) throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER_ADMIN)
@@ -102,6 +102,14 @@ class RentalService(
         }
 
         rentalRepository.save(newRental)
+
+        rentalStatusWorkerLogRepository.save(
+            RentalStatusWorkerLog(
+                rentalHistory = newRental,
+                rentalStatus = newRental.rentalStatus,
+                worker = worker
+            )
+        )
     }
 
     @Transactional
@@ -266,6 +274,14 @@ class RentalService(
 
             else -> return
         }
+
+        rentalStatusWorkerLogRepository.save(
+            RentalStatusWorkerLog(
+                rentalHistory = rentalHistory,
+                rentalStatus = newStatus,
+                worker = worker
+            )
+        )
     }
 
     private fun validatePayer(member: Member) {

@@ -48,9 +48,11 @@ class AdminRentalFacade(
     @Transactional
     fun createRentalByAdmin(request: AdminRentalHistoryRequest) {
         val rentAt = resolveKoreanRentAt(request.rentalTime.hour, request.rentalTime.minute)
+        val worker = memberService.findById(request.workerId)
         val member = memberService.findById(request.memberId)
         val item = itemService.getItemById(request.itemId)
         rentalService.createRentalByAdmin(
+            worker,
             member,
             item,
             request.count,

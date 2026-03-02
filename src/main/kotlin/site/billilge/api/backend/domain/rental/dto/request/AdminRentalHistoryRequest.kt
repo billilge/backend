@@ -14,7 +14,10 @@ data class AdminRentalHistoryRequest(
     val count: Int,
 
     @field:Schema(description = "대여 시작 시간 정보")
-    val rentalTime: RentalTime
+    val rentalTime: RentalTime,
+
+    @field:Schema(description = "근무자 ID", example = "2")
+    val workerId: Long,
 ) {
     @Schema(description = "대여 시작 시간 (시간 및 분)")
     data class RentalTime(
