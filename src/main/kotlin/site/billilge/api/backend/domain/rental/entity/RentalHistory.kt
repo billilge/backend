@@ -35,6 +35,9 @@ class RentalHistory(
 
     @Column(name = "rented_count", nullable = false)
     val rentedCount: Int,
+
+    @Column(name = "item_code", nullable = true)
+    var itemCode: String? = null,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,5 +66,9 @@ class RentalHistory(
 
     fun updateWorker(worker: Member) {
         this.worker = worker
+    }
+
+    fun updateItemCode(itemCode: String) {
+        this.itemCode = itemCode
     }
 }

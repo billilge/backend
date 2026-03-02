@@ -18,6 +18,8 @@ import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
 import site.billilge.api.backend.domain.rental.repository.RentalRepository
+import site.billilge.api.backend.domain.rental.repository.RentalStatusWorkerLogRepository
+import site.billilge.api.backend.domain.rental.entity.RentalStatusWorkerLog
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
@@ -30,6 +32,7 @@ import java.time.ZoneId
 @Transactional(readOnly = true)
 class RentalService(
     private val rentalRepository: RentalRepository,
+    private val rentalStatusWorkerLogRepository: RentalStatusWorkerLogRepository,
     private val notificationService: NotificationService,
     private val configValueService: ConfigValueService,
 ) {
@@ -308,6 +311,17 @@ class RentalService(
             val endDate = LocalDate.parse(configMap[ConfigValueKeys.EXAM_PERIOD_END_DATE.key] ?: return false)
             return this in (startDate..endDate)
         }
+
+    @Transactional
+    fun updateItemCode(rentalHistoryId: Long, itemCode: String) {
+        val rentalHistory = rentalRepository.findById(rentalHistoryId)
+            .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
+        rentalHistory.updateItemCode(itemCode)
+    }
+
+    fun getWorkerLogsByRentalHistoryId(rentalHistoryId: Long): List<RentalStatusWorkerLog> {
+        return rentalStatusWorkerLogRepository.findAllByRentalHistoryIdOrderByCreatedAtAsc(rentalHistoryId)
+    }
 
     companion object {
         private val DASHBOARD_STATUS = listOf(

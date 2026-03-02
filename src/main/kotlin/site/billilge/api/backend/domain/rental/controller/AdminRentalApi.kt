@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryRequest
+import site.billilge.api.backend.domain.rental.dto.request.ItemCodeUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
+import site.billilge.api.backend.domain.rental.dto.response.RentalStatusWorkerLogFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
@@ -87,6 +89,39 @@ interface AdminRentalApi {
     fun addRentalHistory(
         @RequestBody request: AdminRentalHistoryRequest
     ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "물품 코드 수정",
+        description = "대여 기록의 물품 코드를 수정하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "물품 코드 수정 성공"
+            )
+        ]
+    )
+    fun updateItemCode(
+        @PathVariable rentalHistoryId: Long,
+        @RequestBody request: ItemCodeUpdateRequest
+    ): ResponseEntity<Void>
+
+    @Operation(
+        summary = "대여 상태 변경 처리자 로그 조회",
+        description = "대여 기록의 상태별 처리자 로그를 조회하는 관리자용 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "처리자 로그 조회 성공"
+            )
+        ]
+    )
+    fun getWorkerLogs(
+        @PathVariable rentalHistoryId: Long
+    ): ResponseEntity<RentalStatusWorkerLogFindAllResponse>
 
     @Operation(
         summary = "대여 기록 삭제 (관리자용)",

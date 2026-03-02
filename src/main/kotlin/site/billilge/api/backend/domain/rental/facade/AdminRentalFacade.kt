@@ -8,6 +8,7 @@ import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryReq
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
+import site.billilge.api.backend.domain.rental.dto.response.RentalStatusWorkerLogFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.service.RentalService
 import site.billilge.api.backend.global.dto.PageableCondition
@@ -54,6 +55,17 @@ class AdminRentalFacade(
             item,
             request.count,
             rentAt
+        )
+    }
+
+    fun updateItemCode(rentalHistoryId: Long, itemCode: String) {
+        rentalService.updateItemCode(rentalHistoryId, itemCode)
+    }
+
+    fun getWorkerLogs(rentalHistoryId: Long): RentalStatusWorkerLogFindAllResponse {
+        val logs = rentalService.getWorkerLogsByRentalHistoryId(rentalHistoryId)
+        return RentalStatusWorkerLogFindAllResponse(
+            logs.map { RentalStatusWorkerLogFindAllResponse.RentalStatusWorkerLogDetail.from(it) }
         )
     }
 

@@ -4,9 +4,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryRequest
+import site.billilge.api.backend.domain.rental.dto.request.ItemCodeUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
 import site.billilge.api.backend.domain.rental.dto.response.AdminRentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.DashboardResponse
+import site.billilge.api.backend.domain.rental.dto.response.RentalStatusWorkerLogFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.facade.AdminRentalFacade
 import site.billilge.api.backend.domain.member.enums.Role
@@ -52,6 +54,22 @@ class AdminRentalController(
     ): ResponseEntity<Void> {
         adminRentalFacade.createRentalByAdmin(request)
         return ResponseEntity.ok().build()
+    }
+
+    @PatchMapping("/{rentalHistoryId}/item-code")
+    override fun updateItemCode(
+        @PathVariable rentalHistoryId: Long,
+        @RequestBody request: ItemCodeUpdateRequest
+    ): ResponseEntity<Void> {
+        adminRentalFacade.updateItemCode(rentalHistoryId, request.itemCode)
+        return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/{rentalHistoryId}/workers")
+    override fun getWorkerLogs(
+        @PathVariable rentalHistoryId: Long
+    ): ResponseEntity<RentalStatusWorkerLogFindAllResponse> {
+        return ResponseEntity.ok(adminRentalFacade.getWorkerLogs(rentalHistoryId))
     }
 
     @OnlyAdmin
