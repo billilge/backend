@@ -18,4 +18,5 @@ enum class RentalErrorCode(
     MEMBER_IS_NOT_PAYER("복지물품을 대여하려면 먼저 학생회비를 납부해주세요.", HttpStatus.FORBIDDEN),
     MEMBER_IS_NOT_PAYER_ADMIN("학생회비를 납부하지 않은 회원입니다.", HttpStatus.FORBIDDEN),
     TODAY_IS_IN_EXAM_PERIOD("시험기간(04.14.~04.28.)에는\n대여가 불가능합니다.\n양해 부탁드립니다.", HttpStatus.BAD_REQUEST),
+    TODAY_IS_IN_EXAM_PERIOD("시험기간에는\n대여가 불가능합니다.\n양해 부탁드립니다.", HttpStatus.BAD_REQUEST),
 }
