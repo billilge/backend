@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
-import site.billilge.api.backend.domain.member.repository.MemberRepository
-import site.billilge.api.backend.domain.notification.dto.response.NotificationCountResponse
-import site.billilge.api.backend.domain.notification.dto.response.NotificationDetail
-import site.billilge.api.backend.domain.notification.dto.response.NotificationFindAllResponse
+import site.billilge.api.backend.domain.member.service.MemberService
 import site.billilge.api.backend.domain.notification.entity.Notification
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import site.billilge.api.backend.domain.notification.exception.NotificationErrorCode
@@ -23,15 +20,10 @@ private val log = KotlinLogging.logger {}
 class NotificationService(
     private val notificationRepository: NotificationRepository,
     private val fcmService: FCMService,
-    private val memberRepository: MemberRepository,
+    private val memberService: MemberService,
 ) {
-    fun getNotifications(memberId: Long?): NotificationFindAllResponse {
-        val notifications = notificationRepository.findAllUserNotificationsByMemberId(memberId!!)
-
-        return NotificationFindAllResponse(
-            notifications
-                .map { NotificationDetail.from(it) }
-        )
+    fun getNotifications(memberId: Long?): List<Notification> {
+        return notificationRepository.findAllUserNotificationsByMemberId(memberId!!)
     }
 
     @Transactional
@@ -48,12 +40,8 @@ class NotificationService(
         notification.readNotification()
     }
 
-    fun getAdminNotifications(memberId: Long?): NotificationFindAllResponse {
-        val notifications = notificationRepository.findAllAdminNotificationsByMemberId(memberId!!)
-
-        return NotificationFindAllResponse(
-            notifications
-                .map { NotificationDetail.from(it) })
+    fun getAdminNotifications(memberId: Long?): List<Notification> {
+        return notificationRepository.findAllAdminNotificationsByMemberId(memberId!!)
     }
 
     @Transactional
@@ -103,7 +91,7 @@ class NotificationService(
         formatValues: List<String>,
         needPush: Boolean = false
     ) {
-        val admins = memberRepository.findAllByRole(Role.ADMIN)
+        val admins = memberService.findAllByRole(Role.ADMIN)
 
         val notification = Notification(
             status = type,
@@ -119,10 +107,8 @@ class NotificationService(
         }
     }
 
-    fun getNotificationCount(memberId: Long?): NotificationCountResponse {
-        val count = notificationRepository.countUserNotificationsByMemberId(memberId!!)
-
-        return NotificationCountResponse(count)
+    fun getNotificationCount(memberId: Long?): Int {
+        return notificationRepository.countUserNotificationsByMemberId(memberId!!)
     }
 
     @Transactional

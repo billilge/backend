@@ -8,13 +8,14 @@ import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
 import site.billilge.api.backend.domain.rental.dto.response.RentalHistoryFindAllResponse
 import site.billilge.api.backend.domain.rental.dto.response.ReturnRequiredItemFindAllResponse
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
-import site.billilge.api.backend.domain.rental.service.RentalService
+import site.billilge.api.backend.domain.rental.facade.RentalFacade
+import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.security.oauth2.UserAuthInfo
 
 @RestController
 @RequestMapping("/rentals")
 class RentalController(
-    private val rentalService: RentalService,
+    private val rentalFacade: RentalFacade,
 ) : RentalApi {
 
     @PostMapping
@@ -23,17 +24,18 @@ class RentalController(
         @RequestBody rentalHistoryRequest: RentalHistoryRequest
     ): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
-        rentalService.createRental(memberId, rentalHistoryRequest)
+        rentalFacade.createRental(memberId, rentalHistoryRequest)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @OnlyAdmin
     @PostMapping("/dev")
     override fun createDevRental(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @RequestBody rentalHistoryRequest: RentalHistoryRequest
     ): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
-        rentalService.createRental(memberId, rentalHistoryRequest, true)
+        rentalFacade.createRental(memberId, rentalHistoryRequest, true)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
@@ -43,7 +45,7 @@ class RentalController(
         @RequestParam(required =  false) rentalStatus: RentalStatus?
     ) : ResponseEntity<RentalHistoryFindAllResponse> {
         val memberId = userAuthInfo.memberId
-        return ResponseEntity.ok(rentalService.getMemberRentalHistory(memberId, rentalStatus))
+        return ResponseEntity.ok(rentalFacade.getMemberRentalHistory(memberId, rentalStatus))
     }
 
     @PatchMapping("/{rentalHistoryId}")
@@ -51,7 +53,7 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
-        rentalService.cancelRental(memberId, rentalHistoryId)
+        rentalFacade.cancelRental(memberId, rentalHistoryId)
         return ResponseEntity.status(HttpStatus.OK).build()
     }
 
@@ -60,7 +62,7 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo,
         @PathVariable rentalHistoryId: Long): ResponseEntity<Void> {
         val memberId = userAuthInfo.memberId
-        rentalService.returnRental(memberId, rentalHistoryId)
+        rentalFacade.returnRental(memberId, rentalHistoryId)
         return ResponseEntity.status(HttpStatus.OK).build()
     }
 
@@ -69,6 +71,6 @@ class RentalController(
         @AuthenticationPrincipal userAuthInfo: UserAuthInfo
     ): ResponseEntity<ReturnRequiredItemFindAllResponse> {
         val memberId = userAuthInfo.memberId
-        return ResponseEntity.ok(rentalService.getReturnRequiredItems(memberId))
+        return ResponseEntity.ok(rentalFacade.getReturnRequiredItems(memberId))
     }
 }

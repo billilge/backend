@@ -23,6 +23,7 @@ data class AdminRentalHistoryFindAllResponse(
         val rentAt: LocalDateTime,
         val returnedAt: LocalDateTime?,
         val rentalStatus: RentalStatus,
+        val itemCode: String?,
     ) {
         companion object {
             @JvmStatic
@@ -34,6 +35,7 @@ data class AdminRentalHistoryFindAllResponse(
                     rentAt = rentalHistory.rentAt,
                     returnedAt = rentalHistory.returnedAt,
                     rentalStatus = rentalHistory.rentalStatus,
+                    itemCode = rentalHistory.itemCode,
                 )
             }
         }

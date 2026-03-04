@@ -5,9 +5,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
+import site.billilge.api.backend.domain.member.dto.request.AdminRoleUpdateRequest
+import site.billilge.api.backend.global.exception.ErrorResponse
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.MemberFindAllResponse
 import site.billilge.api.backend.global.dto.PageableCondition
@@ -48,6 +53,28 @@ interface AdminMemberApi {
         @ModelAttribute pageableCondition: PageableCondition,
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<AdminFindAllResponse>
+
+    @Operation(
+        summary = "관리자 역할 변경",
+        description = "관리자의 역할을 변경하는 API"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "관리자 역할 변경 성공"
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "회원을 찾을 수 없습니다.",
+                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+            )
+        ]
+    )
+    fun updateAdminRole(
+        @PathVariable memberId: Long,
+        @RequestBody request: AdminRoleUpdateRequest
+    ): ResponseEntity<Void>
 
     @Operation(
         summary = "관리자 추가",

@@ -20,6 +20,9 @@ interface MemberRepository: JpaRepository<Member, Long> {
     @Query("SELECT m FROM Member m WHERE m.role = :role AND m.name LIKE CONCAT('%', :name, '%')")
     fun findAllByRoleAndNameContaining(@Param("role") role: Role, @Param("name") name: String, pageable: Pageable): Page<Member>
 
+    @Query("SELECT m FROM Member m WHERE m.role IN :roles AND m.name LIKE CONCAT('%', :name, '%')")
+    fun findAllByRoleInAndNameContaining(@Param("roles") roles: List<Role>, @Param("name") name: String, pageable: Pageable): Page<Member>
+
     @Query("SELECT m FROM Member m WHERE m.name LIKE CONCAT('%', :name, '%')")
     fun findAllByNameContaining(@Param("name") name: String, pageable: Pageable): Page<Member>
 

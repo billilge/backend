@@ -8,16 +8,18 @@ import org.springframework.web.multipart.MultipartFile
 import site.billilge.api.backend.domain.item.dto.request.ItemRequest
 import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
 import site.billilge.api.backend.domain.item.dto.response.ItemDetail
-import site.billilge.api.backend.domain.item.service.ItemService
+import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
+import site.billilge.api.backend.domain.item.facade.AdminItemFacade
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 
 @RestController
 @RequestMapping("/admin/items")
-@OnlyAdmin
+@OnlyAdmin(roles = [Role.ADMIN, Role.GA, Role.WORKER])
 class AdminItemController(
-    private val itemService: ItemService
+    private val adminItemFacade: AdminItemFacade
 ) : AdminItemApi {
     @GetMapping
     override fun getAllAdminItems(
@@ -25,29 +27,31 @@ class AdminItemController(
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<AdminItemFindAllResponse> {
         return ResponseEntity.ok(
-            itemService.getAllAdminItems(
+            adminItemFacade.getAllAdminItems(
                 pageableCondition,
                 searchCondition
             )
         )
     }
 
+    @OnlyAdmin
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun addItem(
         @RequestPart image: MultipartFile,
         @RequestPart itemRequest: ItemRequest
     ): ResponseEntity<Void> {
-        itemService.addItem(image, itemRequest)
+        adminItemFacade.addItem(image, itemRequest)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @OnlyAdmin
     @PutMapping("/{itemId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun updateItem(
         @PathVariable itemId: Long,
         @RequestPart image: MultipartFile?,
         @RequestPart itemRequest: ItemRequest
     ): ResponseEntity<Void> {
-        itemService.updateItem(image, itemId, itemRequest)
+        adminItemFacade.updateItem(image, itemId, itemRequest)
         return ResponseEntity.ok().build()
     }
 
@@ -55,12 +59,20 @@ class AdminItemController(
     override fun getItemById(
         @PathVariable itemId: Long
     ): ResponseEntity<ItemDetail> {
-        return ResponseEntity.ok(itemService.getItemById(itemId))
+        return ResponseEntity.ok(adminItemFacade.getItemById(itemId))
     }
 
+    @OnlyAdmin
     @DeleteMapping("/{itemId}")
     override fun deleteItem(@PathVariable itemId: Long): ResponseEntity<Void> {
-        itemService.deleteItem(itemId)
+        adminItemFacade.deleteItem(itemId)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/search")
+    override fun searchItems(
+        @ModelAttribute searchCondition: SearchCondition
+    ): ResponseEntity<ItemFindAllResponse> {
+        return ResponseEntity.ok(adminItemFacade.searchItems(searchCondition))
     }
 }

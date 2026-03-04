@@ -43,4 +43,4 @@ application-local.yml
 
 .DS_Store
 /src/main/resources/firebase
-/src/main/resources/payer_insert_queries.sql
+/src/main/resources/*.sql

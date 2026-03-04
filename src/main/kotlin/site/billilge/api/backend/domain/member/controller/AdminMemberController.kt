@@ -3,25 +3,27 @@ package site.billilge.api.backend.domain.member.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import site.billilge.api.backend.domain.member.dto.request.AdminRequest
+import site.billilge.api.backend.domain.member.dto.request.AdminRoleUpdateRequest
 import site.billilge.api.backend.domain.member.dto.response.AdminFindAllResponse
 import site.billilge.api.backend.domain.member.dto.response.MemberFindAllResponse
-import site.billilge.api.backend.domain.member.service.MemberService
+import site.billilge.api.backend.domain.member.facade.AdminMemberFacade
+import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.global.annotation.OnlyAdmin
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 
 @RestController
 @RequestMapping("admin/members")
-@OnlyAdmin
+@OnlyAdmin(roles = [Role.ADMIN, Role.GA, Role.WORKER])
 class AdminMemberController(
-    private val memberService: MemberService
+    private val adminMemberFacade: AdminMemberFacade
 ) : AdminMemberApi {
     @GetMapping
     override fun getAllMembers(
         @ModelAttribute pageableCondition: PageableCondition,
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<MemberFindAllResponse> {
-        return ResponseEntity.ok(memberService.getAllMembers(pageableCondition, searchCondition))
+        return ResponseEntity.ok(adminMemberFacade.getAllMembers(pageableCondition, searchCondition))
     }
 
     @GetMapping("/admins")
@@ -29,18 +31,30 @@ class AdminMemberController(
         @ModelAttribute pageableCondition: PageableCondition,
         @ModelAttribute searchCondition: SearchCondition
     ): ResponseEntity<AdminFindAllResponse> {
-        return ResponseEntity.ok(memberService.getAdminList(pageableCondition, searchCondition))
+        return ResponseEntity.ok(adminMemberFacade.getAdminList(pageableCondition, searchCondition))
     }
 
-    @PostMapping("/admins")
-    override fun addAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
-        memberService.addAdmins(request)
+    @OnlyAdmin
+    @PatchMapping("/{memberId}/admins")
+    override fun updateAdminRole(
+        @PathVariable memberId: Long,
+        @RequestBody request: AdminRoleUpdateRequest
+    ): ResponseEntity<Void> {
+        adminMemberFacade.updateAdminRole(memberId, request)
         return ResponseEntity.ok().build()
     }
 
+    @OnlyAdmin
+    @PostMapping("/admins")
+    override fun addAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
+        adminMemberFacade.addAdmins(request)
+        return ResponseEntity.ok().build()
+    }
+
+    @OnlyAdmin
     @DeleteMapping("/admins")
     override fun deleteAdmins(@RequestBody request: AdminRequest): ResponseEntity<Void> {
-        memberService.deleteAdmins(request)
+        adminMemberFacade.deleteAdmins(request)
         return ResponseEntity.noContent().build()
     }
 }

@@ -1,65 +1,58 @@
 package site.billilge.api.backend.domain.item.service
 
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.multipart.MultipartFile
-import site.billilge.api.backend.domain.item.dto.request.ItemRequest
-import site.billilge.api.backend.domain.item.dto.response.AdminItemFindAllResponse
-import site.billilge.api.backend.domain.item.dto.response.ItemDetail
-import site.billilge.api.backend.domain.item.dto.response.ItemFindAllResponse
 import site.billilge.api.backend.domain.item.entity.Item
+import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.item.exception.ItemErrorCode
 import site.billilge.api.backend.domain.item.repository.ItemRepository
+import site.billilge.api.backend.domain.item.repository.dto.ItemWithRentCountQueryResult
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
-import site.billilge.api.backend.global.external.s3.S3Service
+import site.billilge.api.backend.global.external.FileStorageService
 
 @Service
 @Transactional(readOnly = true)
 class ItemService(
     private val itemRepository: ItemRepository,
-    private val s3Service: S3Service,
+    private val fileStorageService: FileStorageService,
 ) {
-    fun getAllItems(): ItemFindAllResponse {
-        val itemDetails = itemRepository.findAll()
-            .map { ItemDetail.from(it) }
-
-        return ItemFindAllResponse(itemDetails)
+    fun getAllItems(): List<Item> {
+        return itemRepository.findAll()
     }
 
     fun getAllAdminItems(
-        @ModelAttribute pageableCondition: PageableCondition,
-        @ModelAttribute searchCondition: SearchCondition,
-    ): AdminItemFindAllResponse {
+        pageableCondition: PageableCondition,
+        searchCondition: SearchCondition,
+    ): Page<ItemWithRentCountQueryResult> {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "name")
         )
-        val adminItemDetails = itemRepository.findAllAsAdminItemDetailByKeyword(searchCondition.search, pageRequest)
-
-        return AdminItemFindAllResponse(adminItemDetails.content, adminItemDetails.totalPages)
+        return itemRepository.findAllAsAdminItemDetailByKeyword(searchCondition.search, pageRequest)
     }
 
     @Transactional
-    fun addItem(image: MultipartFile, itemRequest: ItemRequest) {
-        if (itemRepository.existsByName(itemRequest.name))
+    fun addItem(image: MultipartFile, name: String, type: ItemType, count: Int) {
+        if (itemRepository.existsByName(name))
             throw ApiException(ItemErrorCode.ITEM_NAME_ALREADY_EXISTS)
 
         checkImageIsSvg(image)
 
-        val imageUrl = s3Service.uploadImageFile(image)
+        val imageUrl = fileStorageService.uploadImageFile(image)
             ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
 
         val newItem = Item(
-            name = itemRequest.name,
-            type = itemRequest.type,
-            count = itemRequest.count,
+            name = name,
+            type = type,
+            count = count,
             imageUrl = imageUrl,
         )
 
@@ -67,7 +60,7 @@ class ItemService(
     }
 
     @Transactional
-    fun updateItem(image: MultipartFile?, itemId: Long, itemRequest: ItemRequest) {
+    fun updateItem(image: MultipartFile?, itemId: Long, name: String, type: ItemType, count: Int) {
         val item = itemRepository.findById(itemId)
             .orElseThrow { ApiException(ItemErrorCode.ITEM_NOT_FOUND) }
 
@@ -77,14 +70,14 @@ class ItemService(
             imageUrl = item.imageUrl
         } else {
             checkImageIsSvg(image)
-            imageUrl = s3Service.uploadImageFile(image)
+            imageUrl = fileStorageService.uploadImageFile(image)
                 ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
         }
 
         item.update(
-            name = itemRequest.name,
-            type = itemRequest.type,
-            count = itemRequest.count,
+            name = name,
+            type = type,
+            count = count,
             imageUrl = imageUrl,
         )
     }
@@ -106,7 +99,7 @@ class ItemService(
         }
 
         if (isEntityDeleted) {
-            s3Service.deleteImageFile(imageUrl)
+            fileStorageService.deleteImageFile(imageUrl)
             return true
         }
 
@@ -118,15 +111,12 @@ class ItemService(
             throw ApiException(ItemErrorCode.IMAGE_IS_NOT_SVG)
     }
 
-    fun searchItems(searchCondition: SearchCondition): ItemFindAllResponse {
-        val items = itemRepository.findByItemName(searchCondition.search)
-
-        return ItemFindAllResponse(items.map { ItemDetail.from(it) })
+    fun searchItems(searchCondition: SearchCondition): List<Item> {
+        return itemRepository.findByItemName(searchCondition.search)
     }
 
-    fun getItemById(itemId: Long): ItemDetail {
-        val item = itemRepository.findById(itemId)
+    fun getItemById(itemId: Long): Item {
+        return itemRepository.findById(itemId)
             .orElseThrow { ApiException(ItemErrorCode.ITEM_NOT_FOUND) }
-        return ItemDetail.from(item);
     }
 }

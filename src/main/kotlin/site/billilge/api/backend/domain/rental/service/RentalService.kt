@@ -1,121 +1,62 @@
 package site.billilge.api.backend.domain.rental.service
 
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import site.billilge.api.backend.domain.configvalue.enums.ConfigValueKeys
+import site.billilge.api.backend.domain.configvalue.service.ConfigValueService
+import site.billilge.api.backend.domain.item.entity.Item
 import site.billilge.api.backend.domain.item.enums.ItemType
-import site.billilge.api.backend.domain.item.repository.ItemRepository
+import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
-import site.billilge.api.backend.domain.member.repository.MemberRepository
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import site.billilge.api.backend.domain.notification.service.NotificationService
-import site.billilge.api.backend.domain.rental.dto.request.AdminRentalHistoryRequest
-import site.billilge.api.backend.domain.rental.dto.request.RentalHistoryRequest
-import site.billilge.api.backend.domain.rental.dto.request.RentalStatusUpdateRequest
-import site.billilge.api.backend.domain.rental.dto.response.*
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
 import site.billilge.api.backend.domain.rental.repository.RentalRepository
+import site.billilge.api.backend.domain.rental.repository.RentalStatusWorkerLogRepository
+import site.billilge.api.backend.domain.rental.entity.RentalStatusWorkerLog
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.utils.isWeekend
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
 
 @Service
 @Transactional(readOnly = true)
 class RentalService(
-    private val memberRepository: MemberRepository,
-
     private val rentalRepository: RentalRepository,
-
-    private val itemRepository: ItemRepository,
-
+    private val rentalStatusWorkerLogRepository: RentalStatusWorkerLogRepository,
     private val notificationService: NotificationService,
-
-    @Value("\${exam-period.start-date}")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private val examPeriodStartDate: LocalDate,
-
-    @Value("\${exam-period.end-date}")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private val examPeriodEndDate: LocalDate,
+    private val configValueService: ConfigValueService,
 ) {
     @Transactional
-    fun createRental(memberId: Long?, rentalHistoryRequest: RentalHistoryRequest, isDevMode: Boolean = false) {
+    fun createRental(rentUser: Member, item: Item, count: Int, rentAt: LocalDateTime, ignoreDuplicate: Boolean, isDevMode: Boolean = false) {
+        validatePayer(rentUser)
+        validateStock(count, item.count)
 
-        val item = itemRepository.findById(rentalHistoryRequest.itemId)
-            .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
-        val rentedCount = rentalHistoryRequest.count
-
-        if (!rentalHistoryRequest.ignoreDuplicate) {
-            val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(
-                rentalHistoryRequest.itemId,
-                memberId!!,
-                RentalStatus.RENTAL
-            )
-
-            if (rentalHistory.isPresent)
-                throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
+        if (!ignoreDuplicate) {
+            checkDuplicateRental(item.id!!, rentUser.id!!)
         }
-
-        if (rentedCount > item.count)
-            throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
-
-        val rentUser = memberRepository.findById(memberId!!)
-            .orElseThrow { ApiException(RentalErrorCode.MEMBER_NOT_FOUND) }
-
-        if (!rentUser.isFeePaid)
-            throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER)
 
         if (isDevMode && rentUser.role != Role.ADMIN)
             throw ApiException(MemberErrorCode.FORBIDDEN)
 
-        val koreanZone = ZoneId.of("Asia/Seoul")
-        val today = LocalDate.now(koreanZone)
-        val requestedRentalDateTime = LocalDateTime.of(
-            today,
-            LocalTime.of(rentalHistoryRequest.rentalTime.hour, rentalHistoryRequest.rentalTime.minute)
-        )
-
-        if ((!isDevMode) && today.isInExamPeriod) {
-            throw ApiException(RentalErrorCode.TODAY_IS_IN_EXAM_PERIOD)
-        }
-
-        val currentKoreanTime = LocalDateTime.now(koreanZone)
         if (!isDevMode) {
-            if (requestedRentalDateTime.isWeekend) {
-                throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_WEEKEND)
-            }
-
-            if (requestedRentalDateTime.isBefore(currentKoreanTime)) {
-                throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
-            }
+            validateRentalTime(rentAt)
         }
-
-        val rentalHour = requestedRentalDateTime.hour
-        val rentalMinute = requestedRentalDateTime.minute
-        if (!isDevMode) {
-            if (rentalHour < 10 || rentalHour > 17) {
-                throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_OUT_OF_RANGE)
-            }
-        }
-
-        val rentAt = requestedRentalDateTime.atZone(koreanZone).toLocalDateTime()
 
         val newRental = RentalHistory(
             member = rentUser,
             item = item,
             rentalStatus = RentalStatus.PENDING,
-            rentedCount = rentedCount,
+            rentedCount = count,
             rentAt = rentAt
         )
 
@@ -124,9 +65,7 @@ class RentalService(
         notificationService.sendNotification(
             rentUser,
             NotificationStatus.USER_RENTAL_APPLY,
-            listOf(
-                item.name
-            ),
+            listOf(item.name),
             true
         )
 
@@ -136,7 +75,7 @@ class RentalService(
                 listOf(
                     rentUser.name,
                     rentUser.studentId,
-                    "${String.format("%02d", rentalHour)}:${String.format("%02d", rentalMinute)}",
+                    "${String.format("%02d", rentAt.hour)}:${String.format("%02d", rentAt.minute)}",
                     item.name
                 ),
                 true
@@ -145,35 +84,16 @@ class RentalService(
     }
 
     @Transactional
-    fun createRentalByAdmin(request: AdminRentalHistoryRequest) {
+    fun createRentalByAdmin(worker: Member, rentUser: Member, item: Item, count: Int, rentAt: LocalDateTime) {
+        validateStock(count, item.count)
 
-        val item = itemRepository.findById(request.itemId)
-            .orElseThrow { ApiException(RentalErrorCode.ITEM_NOT_FOUND) }
-        val rentedCount = request.count
-
-        if (rentedCount > item.count)
-            throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
-
-        val rentUser = memberRepository.findById(request.memberId)
-            .orElseThrow { ApiException(RentalErrorCode.MEMBER_NOT_FOUND) }
-
-        if (!rentUser.isFeePaid)
-            throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER)
-
-        val koreanZone = ZoneId.of("Asia/Seoul")
-        val today = LocalDate.now(koreanZone)
-        val requestedRentalDateTime = LocalDateTime.of(
-            today,
-            LocalTime.of(request.rentalTime.hour, request.rentalTime.minute)
-        )
-
-        val rentAt = requestedRentalDateTime.atZone(koreanZone).toLocalDateTime()
+        if (!rentUser.isFeePaid) throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER_ADMIN)
 
         val newRental = RentalHistory(
             member = rentUser,
             item = item,
             rentalStatus = if (item.type == ItemType.RENTAL) RentalStatus.RENTAL else RentalStatus.RETURNED,
-            rentedCount = rentedCount,
+            rentedCount = count,
             rentAt = rentAt
         ).apply {
             if (rentalStatus == RentalStatus.RETURNED) {
@@ -182,6 +102,14 @@ class RentalService(
         }
 
         rentalRepository.save(newRental)
+
+        rentalStatusWorkerLogRepository.save(
+            RentalStatusWorkerLog(
+                rentalHistory = newRental,
+                rentalStatus = newRental.rentalStatus,
+                worker = worker
+            )
+        )
     }
 
     @Transactional
@@ -189,15 +117,12 @@ class RentalService(
         rentalRepository.deleteById(rentalHistoryId)
     }
 
-    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): RentalHistoryFindAllResponse {
-        val rentalHistories = if (rentalStatus == null) {
+    fun getMemberRentalHistory(memberId: Long?, rentalStatus: RentalStatus?): List<RentalHistory> {
+        return if (rentalStatus == null) {
             rentalRepository.findByMemberId(memberId!!)
         } else {
             rentalRepository.findByMemberIdAndRentalStatus(memberId!!, rentalStatus)
         }
-        return RentalHistoryFindAllResponse(
-            rentalHistories
-                .map { rentalHistory -> RentalHistoryDetail.from(rentalHistory) })
     }
 
     @Transactional
@@ -247,60 +172,47 @@ class RentalService(
         )
     }
 
-    fun getReturnRequiredItems(memberId: Long?): ReturnRequiredItemFindAllResponse {
-        val returnRequiredItems = rentalRepository.findByMemberIdAndRentalStatusIn(memberId!!, RETURN_REQUIRED_STATUS);
-
-        return ReturnRequiredItemFindAllResponse(
-            returnRequiredItems.map { ReturnRequiredItemDetail.from(it) })
+    fun getReturnRequiredItems(memberId: Long?): List<RentalHistory> {
+        return rentalRepository.findByMemberIdAndRentalStatusIn(memberId!!, RETURN_REQUIRED_STATUS)
     }
 
-    fun getAllDashboardApplications(rentalStatus: RentalStatus?): DashboardResponse {
-        val rentalApplicationDetails = rentalRepository.findAllByRentalStatusIn(DASHBOARD_STATUS)
+    fun getAllDashboardApplications(rentalStatus: RentalStatus?): List<RentalHistory> {
+        return rentalRepository.findAllByRentalStatusIn(DASHBOARD_STATUS)
             .filter { if (rentalStatus == null) true else it.rentalStatus == rentalStatus }
-            .map { DashboardResponse.RentalApplicationDetail.from(it) }
-
-        return DashboardResponse(rentalApplicationDetails)
     }
 
     fun getAllRentalHistories(
         pageableCondition: PageableCondition,
         searchCondition: SearchCondition
-    ): AdminRentalHistoryFindAllResponse {
+    ): Page<RentalHistory> {
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "applicatedAt")
         )
-        val results = rentalRepository.findAllByMemberNameContaining(searchCondition.search, pageRequest)
-        val adminRentalHistoryDetails = results
-            .map { AdminRentalHistoryFindAllResponse.AdminRentalHistoryDetail.from(it) }
-            .toList()
-
-        return AdminRentalHistoryFindAllResponse(adminRentalHistoryDetails, results.totalPages)
+        return rentalRepository.findAllByMemberNameContaining(searchCondition.search, pageRequest)
     }
 
     @Transactional
-    fun updateRentalStatus(workerId: Long?, rentalHistoryId: Long, request: RentalStatusUpdateRequest) {
+    fun updateRentalStatus(worker: Member, rentalHistoryId: Long, rentalStatus: RentalStatus) {
         val rentalHistory = rentalRepository.findById(rentalHistoryId)
             .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
         val renter = rentalHistory.member
         val item = rentalHistory.item
         val rentedCount = rentalHistory.rentedCount
 
-        if (request.rentalStatus == RentalStatus.CONFIRMED && item.count <= 0) {
+        if (rentalStatus == RentalStatus.CONFIRMED && item.count <= 0) {
             throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
         }
 
         val newStatus =
-            if (request.rentalStatus == RentalStatus.RENTAL && item.type == ItemType.CONSUMPTION)
+            if (rentalStatus == RentalStatus.RENTAL && item.type == ItemType.CONSUMPTION)
                 RentalStatus.RETURNED
-            else request.rentalStatus
+            else rentalStatus
 
         rentalHistory.updateStatus(newStatus)
 
         val itemName = item.name
-        val worker = memberRepository.findById(workerId!!)
-            .orElseThrow { ApiException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
         when (rentalHistory.rentalStatus) {
             RentalStatus.CONFIRMED -> {
@@ -310,7 +222,6 @@ class RentalService(
                 }
 
                 item.subtractCount(rentalHistory.rentedCount)
-                itemRepository.save(item)
                 rentalHistory.updateWorker(worker)
 
                 notificationService.sendNotification(
@@ -352,7 +263,6 @@ class RentalService(
                 if (item.type == ItemType.CONSUMPTION) return
 
                 item.addCount(rentalHistory.rentedCount)
-                itemRepository.save(item)
                 notificationService.sendNotification(
                     renter,
                     NotificationStatus.USER_RETURN_COMPLETED,
@@ -364,10 +274,70 @@ class RentalService(
 
             else -> return
         }
+
+        rentalStatusWorkerLogRepository.save(
+            RentalStatusWorkerLog(
+                rentalHistory = rentalHistory,
+                rentalStatus = newStatus,
+                worker = worker
+            )
+        )
+    }
+
+    private fun validatePayer(member: Member) {
+        if (!member.isFeePaid)
+            throw ApiException(RentalErrorCode.MEMBER_IS_NOT_PAYER)
+    }
+
+    private fun validateStock(rentedCount: Int, availableCount: Int) {
+        if (rentedCount > availableCount)
+            throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
+    }
+
+    private fun checkDuplicateRental(itemId: Long, memberId: Long) {
+        val rentalHistory = rentalRepository.findByItemIdAndMemberIdAndRentalStatus(
+            itemId, memberId, RentalStatus.RENTAL
+        )
+        if (rentalHistory.isPresent)
+            throw ApiException(RentalErrorCode.RENTAL_ITEM_DUPLICATED)
+    }
+
+    private fun validateRentalTime(rentAt: LocalDateTime) {
+        val today = rentAt.toLocalDate()
+        if (today.isInExamPeriod)
+            throw ApiException(RentalErrorCode.TODAY_IS_IN_EXAM_PERIOD)
+
+        if (rentAt.isWeekend)
+            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_WEEKEND)
+
+        val currentKoreanTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+        if (rentAt.isBefore(currentKoreanTime))
+            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_PAST)
+
+        if (rentAt.hour < 10 || rentAt.hour > 17)
+            throw ApiException(RentalErrorCode.INVALID_RENTAL_TIME_OUT_OF_RANGE)
     }
 
     private val LocalDate.isInExamPeriod
-        get() = this in (examPeriodStartDate..examPeriodEndDate)
+        get(): Boolean {
+            val configMap = configValueService.getMapByKeys(
+                listOf(ConfigValueKeys.EXAM_PERIOD_START_DATE.key, ConfigValueKeys.EXAM_PERIOD_END_DATE.key)
+            )
+            val startDate = LocalDate.parse(configMap[ConfigValueKeys.EXAM_PERIOD_START_DATE.key] ?: return false)
+            val endDate = LocalDate.parse(configMap[ConfigValueKeys.EXAM_PERIOD_END_DATE.key] ?: return false)
+            return this in (startDate..endDate)
+        }
+
+    @Transactional
+    fun updateItemCode(rentalHistoryId: Long, itemCode: String) {
+        val rentalHistory = rentalRepository.findById(rentalHistoryId)
+            .orElseThrow { ApiException(RentalErrorCode.RENTAL_NOT_FOUND) }
+        rentalHistory.updateItemCode(itemCode)
+    }
+
+    fun getWorkerLogsByRentalHistoryId(rentalHistoryId: Long): List<RentalStatusWorkerLog> {
+        return rentalStatusWorkerLogRepository.findAllByRentalHistoryIdOrderByCreatedAtAsc(rentalHistoryId)
+    }
 
     companion object {
         private val DASHBOARD_STATUS = listOf(

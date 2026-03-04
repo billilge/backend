@@ -49,20 +49,20 @@ jobs:
         if: github.event_name == 'push'
         run: docker push ${{ secrets.DOCKER_USERNAME }}/billilge:latest
 
-  run-docker-image-on-ec2:
-    needs: build-docker-image
-    #push 했을 때만 배포가 진행되도록
-    if: github.event_name == 'push'
-    runs-on: self-hosted
-    steps:
-      - name: docker pull
-        run: sudo docker pull ${{ secrets.DOCKER_USERNAME }}/billilge:latest
-
-      - name: docker stop container
-        run: sudo docker stop springboot || true
-
-      - name: docker run new container
-        run: sudo docker run --env-file /home/ubuntu/billilge.env --name springboot --rm -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/billilge:latest
-
-      - name: delete old docker image
-        run: sudo docker image prune -f
+#  run-docker-image-on-ec2:
+#    needs: build-docker-image
+#    #push 했을 때만 배포가 진행되도록
+#    if: github.event_name == 'push'
+#    runs-on: self-hosted
+#    steps:
+#      - name: docker pull
+#        run: sudo docker pull ${{ secrets.DOCKER_USERNAME }}/billilge:latest
+#
+#      - name: docker stop container
+#        run: sudo docker stop springboot || true
+#
+#      - name: docker run new container
+#        run: sudo docker run --env-file /home/ubuntu/billilge.env --name springboot --rm -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/billilge:latest
+#
+#      - name: delete old docker image
+#        run: sudo docker image prune -f
