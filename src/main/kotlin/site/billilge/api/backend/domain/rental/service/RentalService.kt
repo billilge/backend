@@ -101,6 +101,8 @@ class RentalService(
             }
         }
 
+        item.subtractCount(count)
+
         rentalRepository.save(newRental)
 
         rentalStatusWorkerLogRepository.save(
