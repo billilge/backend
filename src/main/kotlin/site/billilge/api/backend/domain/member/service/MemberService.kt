@@ -123,8 +123,8 @@ class MemberService(
             ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
-    fun findAllByRole(role: Role): List<Member> {
-        return memberRepository.findAllByRole(role)
+    fun findAllWorkers(): List<Member> {
+        return memberRepository.findAllByRoleIn(setOf(Role.WORKER, Role.ADMIN, Role.GA))
     }
 
     fun loginAdmin(studentId: String, password: String): String {

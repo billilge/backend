@@ -91,7 +91,7 @@ class NotificationService(
         formatValues: List<String>,
         needPush: Boolean = false
     ) {
-        val admins = memberService.findAllByRole(Role.ADMIN)
+        val admins = memberService.findAllWorkers()
 
         val notification = Notification(
             status = type,

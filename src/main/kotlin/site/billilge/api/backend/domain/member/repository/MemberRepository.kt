@@ -35,4 +35,6 @@ interface MemberRepository: JpaRepository<Member, Long> {
     fun findAllByRole(role: Role): List<Member>
 
     fun findByStudentIdAndName(studentId: String, name: String): Member?
+
+    fun findAllByRoleIn(roles: Set<Role>): List<Member>
 }
