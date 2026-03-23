@@ -32,11 +32,13 @@ class PayerService(
 
         if (payerResults.isEmpty()) return false
 
-        if (payerResults.size > 1) {
-            return payerResults.any { it.studentId == studentId }
+        if (payerResults.size == 1) {
+            val studentIdLastNumber = studentId.substring(4, 8)
+
+            if (studentIdLastNumber == "XXXX") return true
         }
 
-        return true
+        return payerResults.any { it.studentId == studentId }
     }
 
     @Transactional
