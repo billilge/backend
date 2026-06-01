@@ -2,6 +2,7 @@ package site.billilge.api.backend.domain.notification.handler
 
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
@@ -17,7 +18,7 @@ class NotificationEventHandler(
     private val memberService: MemberService,
 ) {
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleRentalApplied(event: RentalAppliedEvent) {
         val member = memberService.findById(event.memberId)
@@ -44,7 +45,7 @@ class NotificationEventHandler(
     }
 
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleRentalCancelled(event: RentalCancelledEvent) {
         val member = memberService.findById(event.memberId)
@@ -57,7 +58,7 @@ class NotificationEventHandler(
     }
 
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleReturnApplied(event: ReturnAppliedEvent) {
         val member = memberService.findById(event.memberId)
@@ -77,7 +78,7 @@ class NotificationEventHandler(
     }
 
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleRentalStatusChanged(event: RentalStatusChangedEvent) {
         val member = memberService.findById(event.memberId)
