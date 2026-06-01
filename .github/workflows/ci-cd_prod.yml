@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/billilge
+
 jobs:
   build-docker-image:
     runs-on: ubuntu-latest
@@ -13,6 +16,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -31,38 +35,34 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew clean build -x test
 
-      # Docker 관련 작업들은 push 시에만 실행되도록 설정
-      - name: docker image build
+      - name: Set up Docker Buildx
         if: github.event_name == 'push'
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/billilge:latest .
+        uses: docker/setup-buildx-action@v3
 
-      # DockerHub 로그인
-      - name: docker login
+      - name: Login to Docker Hub
         if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Docker Hub 이미지 푸시
-      - name: docker Hub push
+      - name: Build and Push Docker Image
         if: github.event_name == 'push'
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/billilge:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.DOCKER_IMAGE }}:latest
 
-#  run-docker-image-on-ec2:
-#    needs: build-docker-image
-#    #push 했을 때만 배포가 진행되도록
-#    if: github.event_name == 'push'
-#    runs-on: self-hosted
-#    steps:
-#      - name: docker pull
-#        run: sudo docker pull ${{ secrets.DOCKER_USERNAME }}/billilge:latest
-#
-#      - name: docker stop container
-#        run: sudo docker stop springboot || true
-#
-#      - name: docker run new container
-#        run: sudo docker run --env-file /home/ubuntu/billilge.env --name springboot --rm -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/billilge:latest
-#
-#      - name: delete old docker image
-#        run: sudo docker image prune -f
+  deploy:
+    needs: build-docker-image
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to CapRover
+        uses: caprover/deploy-from-github@v1.1.2
+        with:
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: ${{ secrets.CAPROVER_PROD_APP_NAME }}
+          token: ${{ secrets.CAPROVER_PROD_APP_TOKEN }}
+          image: ${{ env.DOCKER_IMAGE }}:latest
