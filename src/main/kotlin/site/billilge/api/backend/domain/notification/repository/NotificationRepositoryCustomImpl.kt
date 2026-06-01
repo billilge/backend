@@ -69,6 +69,7 @@ class NotificationRepositoryCustomImpl(
             NotificationStatus.USER_RENTAL_APPROVED,
             NotificationStatus.USER_RENTAL_REJECTED,
             NotificationStatus.USER_RETURN_APPLY,
+            NotificationStatus.USER_RETURN_APPROVED,
             NotificationStatus.USER_RETURN_COMPLETED
         )
 
