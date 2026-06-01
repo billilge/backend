@@ -32,10 +32,8 @@ class NotificationRepositoryCustomImpl(
             .select(notification)
             .from(notification)
             .where(
-                memberIdEquals(notification, memberId)
-                    .and(
-                        notification.status.`in`(ADMIN_TYPE)
-                    )
+                notification.member.isNull
+                    .and(notification.status.`in`(ADMIN_TYPE))
             )
             .orderBy(notification.createdAt.desc())
             .fetch()
