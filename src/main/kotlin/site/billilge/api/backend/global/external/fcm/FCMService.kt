@@ -22,11 +22,13 @@ class FCMService(
             .build()
 
         try {
-            firebaseMessaging.sendAsync(fcmMessage)
-            log.info { "(studentId=${studentId}) FCM Message sent." }
-        } catch(exception: FirebaseMessagingException) {
-            if (exception.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
-                log.error { "(studentId=${studentId}) FCM token is unregistered." }
+            firebaseMessaging.send(fcmMessage)
+            log.info { "(studentId=$studentId) FCM Message sent." }
+        } catch (e: FirebaseMessagingException) {
+            if (e.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
+                log.error { "(studentId=$studentId) FCM token is unregistered." }
+            } else {
+                log.error { "(studentId=$studentId) FCM send failed: ${e.message}" }
             }
         }
     }
