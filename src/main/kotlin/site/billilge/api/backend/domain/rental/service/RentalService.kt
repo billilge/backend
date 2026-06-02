@@ -151,6 +151,7 @@ class RentalService(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "applicatedAt")
+                .and(Sort.by(Sort.Direction.ASC, "id"))
         )
         return rentalRepository.findAllByMemberNameContaining(searchCondition.search, pageRequest)
     }
