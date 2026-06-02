@@ -19,11 +19,21 @@ class Item(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
 
+    @Column(name = "total_count", nullable = false)
+    var totalCount: Int = count
+        protected set
+
     fun update(name: String, type: ItemType, count: Int, imageUrl: String?) {
+        val delta = count - this.totalCount
         this.name = name
         this.type = type
-        this.count = count
+        this.totalCount = count
+        this.count = maxOf(0, this.count + delta)
         imageUrl?.let { this.imageUrl = it }
+    }
+
+    fun fixCount(correctedCount: Int) {
+        this.count = maxOf(0, correctedCount)
     }
 
     fun addCount(count: Int) {

@@ -16,6 +16,7 @@ import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import site.billilge.api.backend.global.external.FileStorageService
+import site.billilge.api.backend.global.logging.log
 
 @Service
 @Transactional(readOnly = true)
@@ -118,5 +119,22 @@ class ItemService(
     fun getItemById(itemId: Long): Item {
         return itemRepository.findById(itemId)
             .orElseThrow { ApiException(ItemErrorCode.ITEM_NOT_FOUND) }
+    }
+
+    @Transactional
+    fun reconcileStocks(): Int {
+        val inconsistencies = itemRepository.findStockInconsistencies()
+
+        inconsistencies.forEach { result ->
+            val corrected = result.totalCount - result.activeRentedSum
+            log.warn {
+                "Stock inconsistency: item[${result.itemId}] '${result.itemName}' " +
+                "count=${result.currentCount} → $corrected " +
+                "(totalCount=${result.totalCount}, activeRented=${result.activeRentedSum})"
+            }
+            itemRepository.findById(result.itemId).ifPresent { it.fixCount(corrected) }
+        }
+
+        return inconsistencies.size
     }
 }
