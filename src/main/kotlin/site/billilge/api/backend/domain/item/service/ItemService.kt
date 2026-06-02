@@ -16,6 +16,7 @@ import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
 import site.billilge.api.backend.global.exception.GlobalErrorCode
 import site.billilge.api.backend.global.external.FileStorageService
+import site.billilge.api.backend.global.logging.log
 
 @Service
 @Transactional(readOnly = true)
@@ -49,14 +50,13 @@ class ItemService(
         val imageUrl = fileStorageService.uploadImageFile(image)
             ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
 
-        val newItem = Item(
-            name = name,
-            type = type,
-            count = count,
-            imageUrl = imageUrl,
-        )
-
-        itemRepository.save(newItem)
+        try {
+            itemRepository.saveAndFlush(Item(name = name, type = type, count = count, imageUrl = imageUrl))
+        } catch (e: Exception) {
+            runCatching { fileStorageService.deleteImageFile(imageUrl) }
+                .onFailure { log.warn { "Failed to delete orphan image after save failure: $imageUrl" } }
+            throw e
+        }
     }
 
     @Transactional
@@ -64,22 +64,31 @@ class ItemService(
         val item = itemRepository.findById(itemId)
             .orElseThrow { ApiException(ItemErrorCode.ITEM_NOT_FOUND) }
 
-        val imageUrl: String
-
-        if (image == null || image.isEmpty) {
-            imageUrl = item.imageUrl
+        val oldImageUrl = item.imageUrl
+        val newImageUrl: String = if (image == null || image.isEmpty) {
+            oldImageUrl
         } else {
             checkImageIsSvg(image)
-            imageUrl = fileStorageService.uploadImageFile(image)
+            fileStorageService.uploadImageFile(image)
                 ?: throw ApiException(GlobalErrorCode.IMAGE_UPLOAD_FAILED)
         }
 
-        item.update(
-            name = name,
-            type = type,
-            count = count,
-            imageUrl = imageUrl,
-        )
+        item.update(name = name, type = type, count = count, imageUrl = newImageUrl)
+
+        try {
+            itemRepository.saveAndFlush(item)
+        } catch (e: Exception) {
+            if (newImageUrl != oldImageUrl) {
+                runCatching { fileStorageService.deleteImageFile(newImageUrl) }
+                    .onFailure { log.warn { "Failed to delete orphan image after update failure: $newImageUrl" } }
+            }
+            throw e
+        }
+
+        if (newImageUrl != oldImageUrl) {
+            runCatching { fileStorageService.deleteImageFile(oldImageUrl) }
+                .onFailure { log.warn { "Failed to delete replaced image: $oldImageUrl" } }
+        }
     }
 
     @Transactional
