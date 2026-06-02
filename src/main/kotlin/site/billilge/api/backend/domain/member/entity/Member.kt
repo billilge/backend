@@ -65,4 +65,8 @@ class Member(
     fun updateFCMToken(fcmToken: String) {
         this.fcmToken = fcmToken
     }
+
+    fun clearFCMToken() {
+        this.fcmToken = null
+    }
 }

@@ -64,6 +64,7 @@ class MemberService(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
+                .and(Sort.by(Sort.Direction.ASC, "id"))
         )
         val adminRoles = listOf(Role.ADMIN, Role.WORKER, Role.GA)
         return memberRepository.findAllByRoleInAndNameContaining(adminRoles, searchCondition.search, pageRequest)
@@ -101,6 +102,7 @@ class MemberService(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.ASC, "studentId")
+                .and(Sort.by(Sort.Direction.ASC, "id"))
         )
 
         return if (searchCondition.search.isEmpty()) {
@@ -116,6 +118,12 @@ class MemberService(
             ?: throw ApiException(MemberErrorCode.MEMBER_NOT_FOUND)
 
         member.updateFCMToken(token)
+    }
+
+    @Transactional
+    fun clearFcmToken(memberId: Long) {
+        val member = memberRepository.findByIdOrNull(memberId) ?: return
+        member.clearFCMToken()
     }
 
     fun findById(memberId: Long): Member {
