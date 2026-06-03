@@ -32,10 +32,8 @@ class NotificationRepositoryCustomImpl(
             .select(notification)
             .from(notification)
             .where(
-                memberIdEquals(notification, memberId)
-                    .and(
-                        notification.status.`in`(ADMIN_TYPE)
-                    )
+                notification.member.isNull
+                    .and(notification.status.`in`(ADMIN_TYPE))
             )
             .orderBy(notification.createdAt.desc())
             .fetch()
@@ -69,6 +67,7 @@ class NotificationRepositoryCustomImpl(
             NotificationStatus.USER_RENTAL_APPROVED,
             NotificationStatus.USER_RENTAL_REJECTED,
             NotificationStatus.USER_RETURN_APPLY,
+            NotificationStatus.USER_RETURN_APPROVED,
             NotificationStatus.USER_RETURN_COMPLETED
         )
 

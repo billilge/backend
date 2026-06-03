@@ -66,6 +66,7 @@ class PayerService(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "enrollmentYear")
+                .and(Sort.by(Sort.Direction.ASC, "id"))
         )
         return payerRepository.findAllByNameContaining(searchCondition.search, pageRequest)
     }

@@ -3,7 +3,10 @@ package site.billilge.api.backend.domain.payer.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "payer")
+@Table(
+    name = "payer",
+    indexes = [Index(name = "idx_payer_name_enrollment_year", columnList = "name, enrollment_year")]
+)
 class Payer(
     @Column(nullable = false)
     val name: String,

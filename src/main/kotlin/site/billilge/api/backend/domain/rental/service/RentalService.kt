@@ -1,5 +1,6 @@
 package site.billilge.api.backend.domain.rental.service
 
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -12,14 +13,16 @@ import site.billilge.api.backend.domain.item.enums.ItemType
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
 import site.billilge.api.backend.domain.member.exception.MemberErrorCode
-import site.billilge.api.backend.domain.notification.enums.NotificationStatus
-import site.billilge.api.backend.domain.notification.service.NotificationService
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
+import site.billilge.api.backend.domain.rental.entity.RentalStatusWorkerLog
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
+import site.billilge.api.backend.domain.rental.event.RentalAppliedEvent
+import site.billilge.api.backend.domain.rental.event.RentalCancelledEvent
+import site.billilge.api.backend.domain.rental.event.RentalStatusChangedEvent
+import site.billilge.api.backend.domain.rental.event.ReturnAppliedEvent
 import site.billilge.api.backend.domain.rental.exception.RentalErrorCode
 import site.billilge.api.backend.domain.rental.repository.RentalRepository
 import site.billilge.api.backend.domain.rental.repository.RentalStatusWorkerLogRepository
-import site.billilge.api.backend.domain.rental.entity.RentalStatusWorkerLog
 import site.billilge.api.backend.global.dto.PageableCondition
 import site.billilge.api.backend.global.dto.SearchCondition
 import site.billilge.api.backend.global.exception.ApiException
@@ -33,7 +36,7 @@ import java.time.ZoneId
 class RentalService(
     private val rentalRepository: RentalRepository,
     private val rentalStatusWorkerLogRepository: RentalStatusWorkerLogRepository,
-    private val notificationService: NotificationService,
+    private val eventPublisher: ApplicationEventPublisher,
     private val configValueService: ConfigValueService,
 ) {
     @Transactional
@@ -62,25 +65,7 @@ class RentalService(
 
         rentalRepository.save(newRental)
 
-        notificationService.sendNotification(
-            rentUser,
-            NotificationStatus.USER_RENTAL_APPLY,
-            listOf(item.name),
-            true
-        )
-
-        if (!isDevMode) {
-            notificationService.sendNotificationToAdmin(
-                NotificationStatus.ADMIN_RENTAL_APPLY,
-                listOf(
-                    rentUser.name,
-                    rentUser.studentId,
-                    "${String.format("%02d", rentAt.hour)}:${String.format("%02d", rentAt.minute)}",
-                    item.name
-                ),
-                true
-            )
-        }
+        eventPublisher.publishEvent(RentalAppliedEvent(rentUser.id!!, item.name, rentAt, isDevMode))
     }
 
     @Transactional
@@ -135,15 +120,7 @@ class RentalService(
 
         rentalHistory.updateStatus(RentalStatus.CANCEL)
 
-        notificationService.sendNotificationToAdmin(
-            NotificationStatus.ADMIN_RENTAL_CANCEL,
-            listOf(
-                renter.name,
-                renter.studentId,
-                rentalHistory.item.name
-            ),
-            true
-        )
+        eventPublisher.publishEvent(RentalCancelledEvent(renter.id!!, rentalHistory.item.name))
     }
 
     @Transactional
@@ -154,24 +131,7 @@ class RentalService(
 
         rentalHistory.updateStatus(RentalStatus.RETURN_PENDING)
 
-        notificationService.sendNotification(
-            renter,
-            NotificationStatus.USER_RETURN_APPLY,
-            listOf(
-                rentalHistory.item.name
-            ),
-            true
-        )
-
-        notificationService.sendNotificationToAdmin(
-            NotificationStatus.ADMIN_RETURN_APPLY,
-            listOf(
-                renter.name,
-                renter.studentId,
-                rentalHistory.item.name
-            ),
-            true
-        )
+        eventPublisher.publishEvent(ReturnAppliedEvent(renter.id!!, rentalHistory.item.name))
     }
 
     fun getReturnRequiredItems(memberId: Long?): List<RentalHistory> {
@@ -191,6 +151,7 @@ class RentalService(
             pageableCondition.pageNo,
             pageableCondition.size,
             Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "applicatedAt")
+                .and(Sort.by(Sort.Direction.ASC, "id"))
         )
         return rentalRepository.findAllByMemberNameContaining(searchCondition.search, pageRequest)
     }
@@ -218,64 +179,24 @@ class RentalService(
 
         when (rentalHistory.rentalStatus) {
             RentalStatus.CONFIRMED -> {
-                //승인
                 if (rentedCount > item.count) {
                     throw ApiException(RentalErrorCode.ITEM_OUT_OF_STOCK)
                 }
-
                 item.subtractCount(rentalHistory.rentedCount)
                 rentalHistory.updateWorker(worker)
-
-                notificationService.sendNotification(
-                    renter,
-                    NotificationStatus.USER_RENTAL_APPROVED,
-                    listOf(
-                        itemName
-                    ),
-                    true
-                )
-            }
-
-            RentalStatus.REJECTED -> {
-                //대여 반려
-                notificationService.sendNotification(
-                    renter,
-                    NotificationStatus.USER_RENTAL_REJECTED,
-                    listOf(
-                        itemName
-                    ),
-                    true
-                )
-            }
-
-            RentalStatus.RETURN_CONFIRMED -> {
-                //반납 승인
-                notificationService.sendNotification(
-                    renter,
-                    NotificationStatus.USER_RETURN_APPROVED,
-                    listOf(
-                        itemName
-                    ),
-                    true
-                )
             }
 
             RentalStatus.RETURNED -> {
-                //반납 완료
                 if (item.type == ItemType.CONSUMPTION) return
-
                 item.addCount(rentalHistory.rentedCount)
-                notificationService.sendNotification(
-                    renter,
-                    NotificationStatus.USER_RETURN_COMPLETED,
-                    listOf(
-                        itemName
-                    )
-                )
             }
+
+            RentalStatus.REJECTED, RentalStatus.RETURN_CONFIRMED -> Unit
 
             else -> return
         }
+
+        eventPublisher.publishEvent(RentalStatusChangedEvent(renter.id!!, itemName, rentalHistory.rentalStatus))
 
         rentalStatusWorkerLogRepository.save(
             RentalStatusWorkerLog(
