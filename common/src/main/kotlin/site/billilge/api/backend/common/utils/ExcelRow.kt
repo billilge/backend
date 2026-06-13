@@ -1,4 +1,4 @@
-package site.billilge.api.backend.global.utils
+package site.billilge.api.backend.common.utils
 
 data class ExcelRow(
     val data: List<String>
