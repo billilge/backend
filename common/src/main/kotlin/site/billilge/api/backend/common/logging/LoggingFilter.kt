@@ -1,4 +1,4 @@
-package site.billilge.api.backend.global.logging
+package site.billilge.api.backend.common.logging
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain

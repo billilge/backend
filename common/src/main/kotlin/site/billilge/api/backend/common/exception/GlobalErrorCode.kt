@@ -1,4 +1,4 @@
-package site.billilge.api.backend.global.exception
+package site.billilge.api.backend.common.exception
 
 import org.springframework.http.HttpStatus
 

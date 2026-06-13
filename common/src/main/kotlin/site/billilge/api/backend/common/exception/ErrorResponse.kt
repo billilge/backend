@@ -1,8 +1,6 @@
-package site.billilge.api.backend.global.exception
+package site.billilge.api.backend.common.exception
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDateTime
 
 @Schema
 data class ErrorResponse(
