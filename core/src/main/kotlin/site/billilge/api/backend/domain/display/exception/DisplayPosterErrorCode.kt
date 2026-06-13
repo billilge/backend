@@ -1,11 +1,10 @@
 package site.billilge.api.backend.domain.display.exception
 
-import org.springframework.http.HttpStatus
 import site.billilge.api.backend.common.exception.ErrorCode
 
 enum class DisplayPosterErrorCode(
     override val message: String,
-    override val httpStatus: HttpStatus,
+    override val status: Int,
 ) : ErrorCode {
-    POSTER_NOT_FOUND("포스터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    POSTER_NOT_FOUND("포스터를 찾을 수 없습니다.", 404),
 }
