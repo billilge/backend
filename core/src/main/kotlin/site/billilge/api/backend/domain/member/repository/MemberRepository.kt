@@ -1,7 +1,7 @@
 package site.billilge.api.backend.domain.member.repository
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import site.billilge.api.backend.core.vo.PageRequest
+import site.billilge.api.backend.core.vo.PageResult
 import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.enums.Role
 
@@ -12,9 +12,9 @@ interface MemberRepository {
     fun existsByEmail(email: String): Boolean
     fun existsByStudentIdAndName(studentId: String, name: String): Boolean
     fun save(member: Member): Member
-    fun findAllByRoleAndNameContaining(role: Role, name: String, pageable: Pageable): Page<Member>
-    fun findAllByRoleInAndNameContaining(roles: List<Role>, name: String, pageable: Pageable): Page<Member>
-    fun findAllByNameContaining(name: String, pageable: Pageable): Page<Member>
+    fun findAllByRoleAndNameContaining(role: Role, name: String, pageRequest: PageRequest): PageResult<Member>
+    fun findAllByRoleInAndNameContaining(roles: List<Role>, name: String, pageRequest: PageRequest): PageResult<Member>
+    fun findAllByNameContaining(name: String, pageRequest: PageRequest): PageResult<Member>
     fun findAllByIds(ids: List<Long>): List<Member>
     fun findAllByStudentIds(studentIds: List<String>): List<Member>
     fun findAllByRole(role: Role): List<Member>

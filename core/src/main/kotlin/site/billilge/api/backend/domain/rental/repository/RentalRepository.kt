@@ -1,7 +1,7 @@
 package site.billilge.api.backend.domain.rental.repository
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import site.billilge.api.backend.core.vo.PageRequest
+import site.billilge.api.backend.core.vo.PageResult
 import site.billilge.api.backend.domain.rental.entity.RentalHistory
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 
@@ -21,5 +21,5 @@ interface RentalRepository {
         rentalStatuses: Collection<RentalStatus>,
     ): List<RentalHistory>
     fun findAllByRentalStatusIn(rentalStatuses: List<RentalStatus>): List<RentalHistory>
-    fun findAllByMemberNameContaining(memberName: String, pageable: Pageable): Page<RentalHistory>
+    fun findAllByMemberNameContaining(memberName: String, pageRequest: PageRequest): PageResult<RentalHistory>
 }
