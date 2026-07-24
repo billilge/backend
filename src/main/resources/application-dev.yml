@@ -7,6 +7,15 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      pool-name: BillilgeHikariCP
+      maximum-pool-size: 15
+      minimum-idle: 15
+      connection-timeout: 3000
+      validation-timeout: 2000
+      idle-timeout: 600000
+      max-lifetime: 1740000
+      keepalive-time: 300000
 
   security:
     oauth2:
@@ -35,6 +44,17 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
       resolve-lazily: true
+
+
+server:
+  tomcat:
+    threads:
+      max: 100
+      min-spare: 20
+    accept-count: 100
+    max-connections: 2000
+    connection-timeout: 5000ms
+  shutdown: graceful
 
 
 jwt:
