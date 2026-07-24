@@ -7,6 +7,17 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      pool-name: BillilgeHikariCP
+      # 동접 100 기준: 요청당 DB 점유 시간이 짧아(수십 ms) 커넥션은 적게 유지하는 편이 큐잉/컨텍스트 스위칭에 유리
+      # 웹 요청 + @Async 알림 처리(기본 태스크 풀 8) 여유분까지 포함해 15
+      maximum-pool-size: 15
+      minimum-idle: 15          # 풀 크기 고정 (증감 시 커넥션 생성 지연 방지)
+      connection-timeout: 3000  # 풀 고갈 시 30초 대기 대신 3초 내 fail-fast
+      validation-timeout: 2000
+      idle-timeout: 600000
+      max-lifetime: 1740000     # 29분. MySQL wait_timeout보다 짧게 유지
+      keepalive-time: 300000
 
   security:
     oauth2:
@@ -34,6 +45,17 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
       resolve-lazily: true
+
+
+server:
+  tomcat:
+    threads:
+      max: 100        # 동접 100을 동시에 수용. 초과분은 accept-count 큐에서 대기
+      min-spare: 20   # 트래픽 유입 시 스레드 생성 지연 완화
+    accept-count: 100
+    max-connections: 2000
+    connection-timeout: 5000ms
+  shutdown: graceful
 
 
 jwt:
