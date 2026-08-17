@@ -32,10 +32,14 @@ spring:
   jpa:
     properties:
       hibernate:
-        format_sql: true
+        # show-sql 과 함께만 의미가 있고, 켜면 쿼리마다 포매팅 비용이 붙는다
+        format_sql: false
         dialect: org.hibernate.dialect.MySQLDialect
         dialect.storage_engine: innodb
-    show-sql: true
+    # show-sql 은 로거를 거치지 않고 System.out 에 직접 쓴다.
+    # 레벨로 끌 수도, 비동기 appender 로 돌릴 수도 없고 요청 스레드들이 출력 락에서 직렬화된다.
+    # SQL 을 봐야 할 때는 아래 logging.level 을 debug 로 올린다 (로거 경로라 제어가 된다).
+    show-sql: false
     hibernate:
       ddl-auto: update
 
@@ -44,6 +48,12 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
       resolve-lazily: true
+
+
+logging:
+  level:
+    org.hibernate.SQL: info                # debug 로 올리면 실행 SQL 출력
+    org.hibernate.orm.jdbc.bind: info      # trace 로 올리면 바인딩 파라미터까지 출력
 
 
 server:
