@@ -72,12 +72,61 @@ domain/{name}/
 ## 서비스 의존성
 
 ```
-ItemService        → ItemRepository, S3Service
-MemberService      → MemberRepository, TokenProvider, PayerService
-NotificationService → NotificationRepository, FCMService, MemberService
-PayerService       → PayerRepository, MemberRepository, ExcelGenerator
-RentalService      → RentalRepository, NotificationService
+ItemService            → ItemRepository, S3Service
+MemberService          → MemberRepository, TokenProvider, PayerService
+NotificationService           → NotificationRepository, NotificationPushOutboxService
+NotificationPushOutboxService → NotificationPushOutboxRepository
+PushNotificationSender        → FCMService, MemberService, NotificationPushOutboxService
+PayerService                  → PayerRepository, MemberRepository, ExcelGenerator
+RentalService                 → RentalRepository, ApplicationEventPublisher
 ```
+
+### 알림 발송 구조
+
+`RentalService`가 이벤트를 발행하면 `NotificationEventHandler`가 커밋 이후 비동기로 받아 처리한다.
+
+```
+RentalService → 이벤트 발행
+  └ NotificationEventHandler (@Async + AFTER_COMMIT, 트랜잭션 없음)
+      ├ NotificationService.createNotification()   # 알림 + 아웃박스 저장 (한 트랜잭션, 즉시 커밋)
+      └ PushNotificationSender.dispatch()          # 트랜잭션 밖에서 FCM 호출
+
+PushRetryScheduler (@Scheduled, 30초 간격)
+  └ PushNotificationSender.dispatch()              # 미발송 건 재시도 (같은 경로)
+```
+
+- **푸시 발송은 트랜잭션 밖에서 수행한다** — 네트워크 I/O가 DB 커넥션을 점유하지 않도록, 그리고 푸시 실패가 저장된 알림을 롤백시키지 않도록 분리
+- **`PushNotificationSender`는 예외를 전파하지 않는다** — 한 수신자의 실패가 다른 수신자에게 영향을 주면 안 됨
+- **FCM 실패는 `PushResult`로 구분한다** — `InvalidToken`(토큰 제거) / `Retryable`(재시도 대상) / `Permanent`(재시도 무의미)
+- **`@Async`는 알림 전용 실행기(`notificationTaskExecutor`)를 사용한다** — `AsyncConfig`에 정의
+
+### 푸시 재시도 (아웃박스)
+
+발송 대상을 `notification_push_outbox`에 **수신자 단위 row**로 남긴다. 알림과 같은 트랜잭션에서 저장되므로 프로세스가 재시작돼도 발송 대상이 남는다.
+
+```
+PENDING ─┬─ 발송 성공 ──────────────→ SENT
+         ├─ Retryable 실패 ─ 백오프 → PENDING (재시도 횟수 소진 시 FAILED)
+         ├─ InvalidToken/Permanent → FAILED
+         └─ 생성 후 1시간 경과 ─────→ EXPIRED
+```
+
+- **백오프는 `30초 → 2분 → 5분 → 15분`, 최대 4회** — `NotificationPushOutbox`의 상수로 정의
+- **생성 후 1시간이 지나면 포기한다(`EXPIRED`)** — 늦게 도착하는 푸시는 의미가 없다. 인앱 알림은 이미 저장돼 있음
+- **즉시 발송과 재시도가 같은 경로를 탄다** — 새 row의 `nextRetryAt`은 60초 뒤로 잡혀, 즉시 시도와 폴러가 겹치지 않는다
+- **메시지 본문은 저장하지 않는다** — 연결된 `Notification`의 status와 formatValues로 재구성
+- 인스턴스를 여러 대로 늘리면 조회에 잠금(`FOR UPDATE SKIP LOCKED`)이나 ShedLock이 필요하다
+
+**보관 정책** — `PushOutboxPurgeScheduler`가 매일 새벽 4시(KST)에 정리한다.
+
+| 상태 | 보존 기간 |
+|---|---|
+| `SENT` | 7일 |
+| `FAILED`, `EXPIRED` | 30일 (실패 원인 확인용) |
+| `PENDING` | 삭제하지 않음 |
+
+- **배치(500건)로 나눠 삭제하고 배치마다 트랜잭션을 끊는다** — 락 구간을 짧게 유지
+- **한 회 처리량 상한(20배치)에 도달하면 경고 로그를 남긴다** — 남은 건이 있다는 사실이 묻히지 않도록
 
 ## 대여 상태 머신
 

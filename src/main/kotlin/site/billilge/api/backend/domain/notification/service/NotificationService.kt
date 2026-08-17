@@ -1,26 +1,19 @@
 package site.billilge.api.backend.domain.notification.service
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import site.billilge.api.backend.domain.member.entity.Member
-import site.billilge.api.backend.domain.member.enums.Role
-import site.billilge.api.backend.domain.member.service.MemberService
 import site.billilge.api.backend.domain.notification.entity.Notification
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import site.billilge.api.backend.domain.notification.exception.NotificationErrorCode
 import site.billilge.api.backend.domain.notification.repository.NotificationRepository
 import site.billilge.api.backend.global.exception.ApiException
-import site.billilge.api.backend.global.external.fcm.FCMService
-
-private val log = KotlinLogging.logger {}
 
 @Service
 @Transactional(readOnly = true)
 class NotificationService(
     private val notificationRepository: NotificationRepository,
-    private val fcmService: FCMService,
-    private val memberService: MemberService,
+    private val notificationPushOutboxService: NotificationPushOutboxService,
 ) {
     fun getNotifications(memberId: Long?): List<Notification> {
         return notificationRepository.findAllUserNotificationsByMemberId(memberId!!)
@@ -44,71 +37,44 @@ class NotificationService(
         return notificationRepository.findAllAdminNotificationsByMemberId(memberId!!)
     }
 
+    /**
+     * 알림을 저장하고 푸시 발송 대상을 대기열에 등록한다. 등록된 아웃박스 ID를 반환한다.
+     *
+     * 알림과 발송 대상이 하나의 트랜잭션에서 저장되므로, 커밋된 이후에는 발송이 누락되더라도
+     * 대기열에 남아 재시도된다.
+     */
     @Transactional
-    fun sendNotification(
+    fun createNotification(
         member: Member,
         status: NotificationStatus,
         formatValues: List<String>,
-        needPush: Boolean = false,
-    ) {
-        val notification = Notification(
-            member = member,
-            status = status,
-            formatValues = formatValues.joinToString(",")
+        pushReceivers: List<Member> = emptyList(),
+    ): List<Long> {
+        val notification = notificationRepository.save(
+            Notification(
+                member = member,
+                status = status,
+                formatValues = formatValues.joinToString(",")
+            )
         )
 
-        notificationRepository.save(notification)
-
-        if (needPush) {
-            sendPushNotification(member, status, formatValues)
-        }
-    }
-
-    private fun sendPushNotification(
-        member: Member,
-        status: NotificationStatus,
-        formatValues: List<String>,
-    ) {
-        val studentId = member.studentId
-
-        if (member.fcmToken == null) {
-            log.warn { "(studentId=${studentId}) FCM Token is null" }
-            return
-        }
-
-        val isTokenValid = fcmService.sendPushNotification(
-            member.fcmToken!!,
-            status.title,
-            status.formattedMessage(*formatValues.toTypedArray()),
-            status.link,
-            studentId
-        )
-
-        if (!isTokenValid) {
-            memberService.clearFcmToken(member.id!!)
-        }
+        return notificationPushOutboxService.register(notification, pushReceivers)
     }
 
     @Transactional
-    fun sendNotificationToAdmin(
-        type: NotificationStatus,
+    fun createAdminNotification(
+        status: NotificationStatus,
         formatValues: List<String>,
-        needPush: Boolean = false
-    ) {
-        val admins = memberService.findAllWorkers()
-
-        val notification = Notification(
-            status = type,
-            formatValues = formatValues.joinToString(",")
+        pushReceivers: List<Member> = emptyList(),
+    ): List<Long> {
+        val notification = notificationRepository.save(
+            Notification(
+                status = status,
+                formatValues = formatValues.joinToString(",")
+            )
         )
 
-        notificationRepository.save(notification)
-
-        if (needPush) {
-            admins.forEach { admin ->
-                sendPushNotification(admin, type, formatValues)
-            }
-        }
+        return notificationPushOutboxService.register(notification, pushReceivers)
     }
 
     fun getNotificationCount(memberId: Long?): Int {
