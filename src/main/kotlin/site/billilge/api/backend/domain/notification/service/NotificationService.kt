@@ -13,6 +13,7 @@ import site.billilge.api.backend.global.exception.ApiException
 @Transactional(readOnly = true)
 class NotificationService(
     private val notificationRepository: NotificationRepository,
+    private val notificationPushOutboxService: NotificationPushOutboxService,
 ) {
     fun getNotifications(memberId: Long?): List<Notification> {
         return notificationRepository.findAllUserNotificationsByMemberId(memberId!!)
@@ -36,32 +37,44 @@ class NotificationService(
         return notificationRepository.findAllAdminNotificationsByMemberId(memberId!!)
     }
 
+    /**
+     * 알림을 저장하고 푸시 발송 대상을 대기열에 등록한다. 등록된 아웃박스 ID를 반환한다.
+     *
+     * 알림과 발송 대상이 하나의 트랜잭션에서 저장되므로, 커밋된 이후에는 발송이 누락되더라도
+     * 대기열에 남아 재시도된다.
+     */
     @Transactional
     fun createNotification(
         member: Member,
         status: NotificationStatus,
         formatValues: List<String>,
-    ): Notification {
-        val notification = Notification(
-            member = member,
-            status = status,
-            formatValues = formatValues.joinToString(",")
+        pushReceivers: List<Member> = emptyList(),
+    ): List<Long> {
+        val notification = notificationRepository.save(
+            Notification(
+                member = member,
+                status = status,
+                formatValues = formatValues.joinToString(",")
+            )
         )
 
-        return notificationRepository.save(notification)
+        return notificationPushOutboxService.register(notification, pushReceivers)
     }
 
     @Transactional
     fun createAdminNotification(
         status: NotificationStatus,
         formatValues: List<String>,
-    ): Notification {
-        val notification = Notification(
-            status = status,
-            formatValues = formatValues.joinToString(",")
+        pushReceivers: List<Member> = emptyList(),
+    ): List<Long> {
+        val notification = notificationRepository.save(
+            Notification(
+                status = status,
+                formatValues = formatValues.joinToString(",")
+            )
         )
 
-        return notificationRepository.save(notification)
+        return notificationPushOutboxService.register(notification, pushReceivers)
     }
 
     fun getNotificationCount(memberId: Long?): Int {

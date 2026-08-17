@@ -103,11 +103,14 @@ class NotificationEventHandler(
         formatValues: List<String>,
         needPush: Boolean,
     ) {
-        notificationService.createNotification(member, status, formatValues)
+        val outboxIds = notificationService.createNotification(
+            member,
+            status,
+            formatValues,
+            pushReceivers = if (needPush) listOf(member) else emptyList(),
+        )
 
-        if (needPush) {
-            pushNotificationSender.send(member, status, formatValues)
-        }
+        pushNotificationSender.dispatch(outboxIds)
     }
 
     private fun notifyAdmins(
@@ -115,10 +118,12 @@ class NotificationEventHandler(
         formatValues: List<String>,
         needPush: Boolean,
     ) {
-        notificationService.createAdminNotification(status, formatValues)
+        val outboxIds = notificationService.createAdminNotification(
+            status,
+            formatValues,
+            pushReceivers = if (needPush) memberService.findAllWorkers() else emptyList(),
+        )
 
-        if (needPush) {
-            pushNotificationSender.sendAll(memberService.findAllWorkers(), status, formatValues)
-        }
+        pushNotificationSender.dispatch(outboxIds)
     }
 }
