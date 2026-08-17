@@ -109,7 +109,15 @@ class NotificationPushOutbox(
             return
         }
 
-        nextRetryAt = now.plusSeconds(BACKOFF_SECONDS[retryCount])
+        val nextAttemptAt = now.plusSeconds(BACKOFF_SECONDS[retryCount])
+
+        // 다음 시도 시각이 이미 유효 시간을 넘긴다면 기다릴 이유가 없다
+        if (isExpired(nextAttemptAt)) {
+            markExpired()
+            return
+        }
+
+        nextRetryAt = nextAttemptAt
         retryCount++
     }
 
@@ -122,11 +130,16 @@ class NotificationPushOutbox(
         /** 즉시 발송 시도와 폴러가 겹치지 않도록 두는 간격 */
         private val FIRST_POLL_DELAY: Duration = Duration.ofSeconds(60)
 
-        /** 늦게 도착하는 푸시는 의미가 없으므로 1시간까지만 재시도한다 */
-        private val TIME_TO_LIVE: Duration = Duration.ofHours(1)
+        /**
+         * 늦게 도착하는 푸시는 의미가 없으므로 10분까지만 재시도한다.
+         *
+         * 사용자 알림은 지금 과방에 갈지를 결정하는 정보고, 관리자 알림도 학생이 기다리는
+         * 상태에서 처리해야 하는 일이라 둘 다 실시간성이 중요하다.
+         */
+        private val TIME_TO_LIVE: Duration = Duration.ofMinutes(10)
 
-        /** 재시도 간격(초) — 배열 길이가 곧 최대 재시도 횟수 */
-        private val BACKOFF_SECONDS = longArrayOf(30, 120, 300, 900)
+        /** 재시도 간격(초) — 배열 길이가 곧 최대 재시도 횟수. 누적 7분 30초로 유효 시간 안에 들어온다 */
+        private val BACKOFF_SECONDS = longArrayOf(30, 120, 300)
 
         private const val MAX_ERROR_LENGTH = 500
     }
