@@ -22,7 +22,10 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     name = "notification_push_outbox",
-    indexes = [Index(name = "idx_push_outbox_delivery", columnList = "delivery_status, next_retry_at")]
+    indexes = [
+        Index(name = "idx_push_outbox_delivery", columnList = "delivery_status, next_retry_at"),
+        Index(name = "idx_push_outbox_purge", columnList = "delivery_status, created_at"),
+    ]
 )
 @EntityListeners(AuditingEntityListener::class)
 class NotificationPushOutbox(

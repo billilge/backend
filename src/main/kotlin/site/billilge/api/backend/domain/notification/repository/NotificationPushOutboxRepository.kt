@@ -20,4 +20,17 @@ interface NotificationPushOutboxRepository : JpaRepository<NotificationPushOutbo
         now: LocalDateTime,
         pageable: Pageable
     ): List<Long>
+
+    /** 정렬하지 않는다 — 보존 기간이 지난 건을 모두 지우므로 삭제 순서는 중요하지 않다 */
+    @Query(
+        """
+        SELECT o.id FROM NotificationPushOutbox o
+        WHERE o.deliveryStatus IN :deliveryStatuses AND o.createdAt < :createdBefore
+        """
+    )
+    fun findPurgeTargetIds(
+        deliveryStatuses: Collection<PushDeliveryStatus>,
+        createdBefore: LocalDateTime,
+        pageable: Pageable
+    ): List<Long>
 }

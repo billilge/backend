@@ -90,6 +90,31 @@ class NotificationPushOutboxService(
         }
     }
 
+    /**
+     * 보존 기간이 지난 건을 배치 크기만큼 삭제하고 삭제한 수를 반환한다.
+     *
+     * 한 번에 다 지우면 락 구간이 길어지므로, 호출부가 반환값을 보고 반복 호출한다.
+     * 배치마다 트랜잭션이 끊기도록 이 메서드가 트랜잭션 경계를 잡는다.
+     */
+    @Transactional
+    fun deletePurgeTargetBatch(
+        deliveryStatuses: Collection<PushDeliveryStatus>,
+        createdBefore: LocalDateTime,
+        batchSize: Int,
+    ): Int {
+        val targetIds = notificationPushOutboxRepository.findPurgeTargetIds(
+            deliveryStatuses,
+            createdBefore,
+            PageRequest.of(0, batchSize)
+        )
+
+        if (targetIds.isEmpty()) return 0
+
+        notificationPushOutboxRepository.deleteAllByIdInBatch(targetIds)
+
+        return targetIds.size
+    }
+
     private fun Member.hasFcmToken(): Boolean {
         if (fcmToken != null) return true
 
