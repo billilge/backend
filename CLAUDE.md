@@ -72,12 +72,29 @@ domain/{name}/
 ## 서비스 의존성
 
 ```
-ItemService        → ItemRepository, S3Service
-MemberService      → MemberRepository, TokenProvider, PayerService
-NotificationService → NotificationRepository, FCMService, MemberService
-PayerService       → PayerRepository, MemberRepository, ExcelGenerator
-RentalService      → RentalRepository, NotificationService
+ItemService            → ItemRepository, S3Service
+MemberService          → MemberRepository, TokenProvider, PayerService
+NotificationService    → NotificationRepository
+PushNotificationSender → FCMService, MemberService
+PayerService           → PayerRepository, MemberRepository, ExcelGenerator
+RentalService          → RentalRepository, ApplicationEventPublisher
 ```
+
+### 알림 발송 구조
+
+`RentalService`가 이벤트를 발행하면 `NotificationEventHandler`가 커밋 이후 비동기로 받아 처리한다.
+
+```
+RentalService → 이벤트 발행
+  └ NotificationEventHandler (@Async + AFTER_COMMIT, 트랜잭션 없음)
+      ├ NotificationService.createNotification()   # 짧은 트랜잭션에서 저장 후 즉시 커밋
+      └ PushNotificationSender.send()              # 트랜잭션 밖에서 FCM 호출
+```
+
+- **푸시 발송은 트랜잭션 밖에서 수행한다** — 네트워크 I/O가 DB 커넥션을 점유하지 않도록, 그리고 푸시 실패가 저장된 알림을 롤백시키지 않도록 분리
+- **`PushNotificationSender`는 예외를 전파하지 않는다** — 한 수신자의 실패가 다른 수신자에게 영향을 주면 안 됨
+- **FCM 실패는 `PushResult`로 구분한다** — `InvalidToken`(토큰 제거) / `Retryable`(재시도 대상) / `Permanent`(재시도 무의미)
+- **`@Async`는 알림 전용 실행기(`notificationTaskExecutor`)를 사용한다** — `AsyncConfig`에 정의
 
 ## 대여 상태 머신
 

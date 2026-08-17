@@ -2,28 +2,34 @@ package site.billilge.api.backend.domain.notification.handler
 
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
+import site.billilge.api.backend.domain.member.entity.Member
 import site.billilge.api.backend.domain.member.service.MemberService
 import site.billilge.api.backend.domain.notification.enums.NotificationStatus
 import site.billilge.api.backend.domain.notification.service.NotificationService
+import site.billilge.api.backend.domain.notification.service.PushNotificationSender
 import site.billilge.api.backend.domain.rental.enums.RentalStatus
 import site.billilge.api.backend.domain.rental.event.*
 
+/**
+ * 알림 저장(DB)과 푸시 발송(FCM)을 분리해 호출한다.
+ *
+ * 핸들러 자체에는 트랜잭션을 걸지 않는다. 알림 저장은 NotificationService의 짧은 트랜잭션에서
+ * 즉시 커밋되고, 그 뒤 트랜잭션 밖에서 푸시를 보낸다. 푸시가 실패해도 저장된 알림은 남는다.
+ */
 @Component
 class NotificationEventHandler(
     private val notificationService: NotificationService,
+    private val pushNotificationSender: PushNotificationSender,
     private val memberService: MemberService,
 ) {
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleRentalApplied(event: RentalAppliedEvent) {
         val member = memberService.findById(event.memberId)
 
-        notificationService.sendNotification(
+        notifyUser(
             member,
             NotificationStatus.USER_RENTAL_APPLY,
             listOf(event.itemName),
@@ -31,7 +37,7 @@ class NotificationEventHandler(
         )
 
         if (!event.isDevMode) {
-            notificationService.sendNotificationToAdmin(
+            notifyAdmins(
                 NotificationStatus.ADMIN_RENTAL_APPLY,
                 listOf(
                     member.name,
@@ -45,12 +51,11 @@ class NotificationEventHandler(
     }
 
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleRentalCancelled(event: RentalCancelledEvent) {
         val member = memberService.findById(event.memberId)
 
-        notificationService.sendNotificationToAdmin(
+        notifyAdmins(
             NotificationStatus.ADMIN_RENTAL_CANCEL,
             listOf(member.name, member.studentId, event.itemName),
             needPush = true,
@@ -58,19 +63,18 @@ class NotificationEventHandler(
     }
 
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleReturnApplied(event: ReturnAppliedEvent) {
         val member = memberService.findById(event.memberId)
 
-        notificationService.sendNotification(
+        notifyUser(
             member,
             NotificationStatus.USER_RETURN_APPLY,
             listOf(event.itemName),
             needPush = true,
         )
 
-        notificationService.sendNotificationToAdmin(
+        notifyAdmins(
             NotificationStatus.ADMIN_RETURN_APPLY,
             listOf(member.name, member.studentId, event.itemName),
             needPush = true,
@@ -78,7 +82,6 @@ class NotificationEventHandler(
     }
 
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleRentalStatusChanged(event: RentalStatusChangedEvent) {
         val member = memberService.findById(event.memberId)
@@ -91,6 +94,31 @@ class NotificationEventHandler(
             else -> return
         }
 
-        notificationService.sendNotification(member, notificationStatus, listOf(event.itemName), needPush)
+        notifyUser(member, notificationStatus, listOf(event.itemName), needPush)
+    }
+
+    private fun notifyUser(
+        member: Member,
+        status: NotificationStatus,
+        formatValues: List<String>,
+        needPush: Boolean,
+    ) {
+        notificationService.createNotification(member, status, formatValues)
+
+        if (needPush) {
+            pushNotificationSender.send(member, status, formatValues)
+        }
+    }
+
+    private fun notifyAdmins(
+        status: NotificationStatus,
+        formatValues: List<String>,
+        needPush: Boolean,
+    ) {
+        notificationService.createAdminNotification(status, formatValues)
+
+        if (needPush) {
+            pushNotificationSender.sendAll(memberService.findAllWorkers(), status, formatValues)
+        }
     }
 }
