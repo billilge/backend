@@ -24,10 +24,10 @@ class NotificationPushOutboxTest {
     @Test
     @DisplayName("재시도 가능한 실패는 정해진 간격만큼 다음 시도를 미룬다")
     fun `백오프 간격이 점점 늘어난다`() {
-        val outbox = createOutbox(NotificationStatus.ADMIN_RENTAL_APPLY)
+        val outbox = createOutbox()
         val now = LocalDateTime.now()
 
-        val expectedBackoffSeconds = listOf(30L, 120L, 300L, 900L)
+        val expectedBackoffSeconds = listOf(30L, 120L, 300L)
 
         expectedBackoffSeconds.forEachIndexed { index, seconds ->
             outbox.recordRetryableFailure("UNAVAILABLE", now)
@@ -39,12 +39,23 @@ class NotificationPushOutboxTest {
     }
 
     @Test
-    @DisplayName("재시도 횟수를 모두 쓰면 발송을 포기한다")
-    fun `최대 재시도 횟수를 넘기면 FAILED가 된다`() {
-        val outbox = createOutbox(NotificationStatus.ADMIN_RENTAL_APPLY)
+    @DisplayName("재시도는 모두 유효 시간(10분) 안에서 이뤄진다")
+    fun `마지막 재시도 시각이 유효 시간을 넘지 않는다`() {
+        val outbox = createOutbox()
         val now = LocalDateTime.now()
 
-        repeat(4) { outbox.recordRetryableFailure("UNAVAILABLE", now) }
+        repeat(3) { outbox.recordRetryableFailure("UNAVAILABLE", now) }
+
+        assertFalse(outbox.isExpired(outbox.nextRetryAt))
+    }
+
+    @Test
+    @DisplayName("재시도 횟수를 모두 쓰면 발송을 포기한다")
+    fun `최대 재시도 횟수를 넘기면 FAILED가 된다`() {
+        val outbox = createOutbox()
+        val now = LocalDateTime.now()
+
+        repeat(3) { outbox.recordRetryableFailure("UNAVAILABLE", now) }
         assertEquals(PushDeliveryStatus.PENDING, outbox.deliveryStatus)
 
         outbox.recordRetryableFailure("UNAVAILABLE", now)
@@ -54,23 +65,11 @@ class NotificationPushOutboxTest {
     }
 
     @Test
-    @DisplayName("유효 시간은 알림 종류가 정한다 — 사용자 알림이 관리자 알림보다 먼저 만료된다")
-    fun `알림 종류에 따라 유효 시간이 다르다`() {
-        val userOutbox = createOutbox(NotificationStatus.USER_RENTAL_APPROVED)
-        val adminOutbox = createOutbox(NotificationStatus.ADMIN_RENTAL_APPLY)
-
-        val twentyMinutesLater = LocalDateTime.now().plusMinutes(20)
-
-        assertTrue(userOutbox.isExpired(twentyMinutesLater), "사용자 알림은 20분 뒤 만료되어야 한다")
-        assertFalse(adminOutbox.isExpired(twentyMinutesLater), "관리자 알림은 20분 뒤에도 유효해야 한다")
-    }
-
-    @Test
     @DisplayName("유효 시간이 지나면 재시도 횟수가 남아 있어도 포기한다")
     fun `TTL을 넘기면 EXPIRED가 된다`() {
-        val outbox = createOutbox(NotificationStatus.ADMIN_RENTAL_APPLY)
+        val outbox = createOutbox()
 
-        outbox.recordRetryableFailure("UNAVAILABLE", LocalDateTime.now().plusHours(2))
+        outbox.recordRetryableFailure("UNAVAILABLE", LocalDateTime.now().plusMinutes(11))
 
         assertEquals(PushDeliveryStatus.EXPIRED, outbox.deliveryStatus)
         assertEquals(0, outbox.retryCount)
@@ -79,19 +78,17 @@ class NotificationPushOutboxTest {
     @Test
     @DisplayName("다음 시도 시각이 이미 유효 시간을 넘기면 기다리지 않고 바로 포기한다")
     fun `유효 시간을 넘길 재시도는 예약하지 않는다`() {
-        val outbox = createOutbox(NotificationStatus.USER_RENTAL_APPROVED)
-        val now = LocalDateTime.now()
+        val outbox = createOutbox()
 
-        // 사용자 알림 유효 시간은 15분 — 30초, 2분, 5분 간격까지는 예약된다
-        repeat(3) { outbox.recordRetryableFailure("UNAVAILABLE", now) }
+        // 유효 시간 10분을 40초 남긴 시점의 실패 — 다음 간격(30초)은 들어가지만
+        outbox.recordRetryableFailure("UNAVAILABLE", LocalDateTime.now().plusMinutes(9).plusSeconds(20))
         assertEquals(PushDeliveryStatus.PENDING, outbox.deliveryStatus)
-        assertEquals(3, outbox.retryCount)
 
-        // 네 번째 간격은 15분 뒤라 유효 시간을 넘긴다
-        outbox.recordRetryableFailure("UNAVAILABLE", now)
+        // 20초 남은 시점의 실패 — 다음 간격(30초)이면 이미 만료다
+        outbox.recordRetryableFailure("UNAVAILABLE", LocalDateTime.now().plusMinutes(9).plusSeconds(40))
 
         assertEquals(PushDeliveryStatus.EXPIRED, outbox.deliveryStatus)
-        assertEquals(3, outbox.retryCount)
+        assertEquals(1, outbox.retryCount)
     }
 
     @Test
@@ -116,13 +113,11 @@ class NotificationPushOutboxTest {
         assertFalse(outbox.isPending())
     }
 
-    private fun createOutbox(
-        status: NotificationStatus = NotificationStatus.USER_RENTAL_APPROVED
-    ): NotificationPushOutbox {
+    private fun createOutbox(): NotificationPushOutbox {
         val member = Member(name = "김국민", studentId = "20240001")
         val notification = Notification(
             member = member,
-            status = status,
+            status = NotificationStatus.USER_RENTAL_APPROVED,
             formatValues = "우산"
         )
 
