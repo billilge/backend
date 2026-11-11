@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  로그 출력을 요청 스레드에서 떼어내기 위한 설정.
+
+  Logback 의 ConsoleAppender 는 OutputStreamAppender 를 상속하고 write 가 동기화돼 있다.
+  톰캣 스레드 100개가 한 스트림에 쓰면 그 락에서 직렬화되고, 로그 한 줄의 비용이
+  그대로 응답시간에 실린다. (#151 에서 SQL 출력을 끄자 p95 452ms -> 240ms)
+
+  AsyncAppender 로 감싸면 요청 스레드는 큐에 넣기만 하고 실제 출력은 워커 스레드가 맡는다.
+-->
+<configuration>
+    <!-- 로그 포맷과 CONSOLE appender 는 Spring Boot 기본 정의를 그대로 쓴다.
+         커스텀 설정 파일이 있으면 부트 기본 설정이 통째로 대체되므로 명시적으로 include 한다. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="CONSOLE"/>
+
+        <!-- 큐가 가득 차도 요청 스레드를 막지 않는다. 넘치면 이벤트를 버린다.
+             기본값 false 는 블로킹이라, 비동기로 만든 이유가 사라진다.
+             응답시간을 지키는 게 목적이므로 로그 유실보다 블로킹을 더 나쁘게 본다. -->
+        <neverBlock>true</neverBlock>
+
+        <!-- 기본값 20 은 큐가 80% 차면 INFO 이하를 조용히 버린다.
+             LoggingFilter 의 요청 로그가 INFO 라 부하 상황에서 소리 없이 사라진다.
+             0 으로 두면 레벨과 무관하게 큐에 자리가 있는 한 다 남기고,
+             실제 유실은 neverBlock 으로 큐가 완전히 찼을 때만 일어난다. -->
+        <discardingThreshold>0</discardingThreshold>
+
+        <!-- 100 VU 기준 요청당 1~2줄. 순간 버스트를 흡수할 만큼만 잡는다.
+             이벤트 하나가 대략 1KB 이므로 가득 차도 4MB 남짓. -->
+        <queueSize>4096</queueSize>
+
+        <!-- true 로 두면 이벤트마다 스택 트레이스를 떠서 동기보다 느려질 수 있다 -->
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC_CONSOLE"/>
+    </root>
+</configuration>

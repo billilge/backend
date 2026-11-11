@@ -59,10 +59,8 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to CapRover
-        uses: caprover/deploy-from-github@v1.1.2
-        with:
-          server: ${{ secrets.CAPROVER_SERVER }}
-          app: ${{ secrets.CAPROVER_PROD_APP_NAME }}
-          token: ${{ secrets.CAPROVER_PROD_APP_TOKEN }}
-          image: ${{ env.DOCKER_IMAGE }}:latest
+      - name: Trigger Coolify deploy
+        run: |
+          curl --fail --show-error --silent --request GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_PROD_RESOURCE_UUID }}&force=true" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}"

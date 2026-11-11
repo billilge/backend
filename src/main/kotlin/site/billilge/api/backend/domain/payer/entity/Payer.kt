@@ -5,7 +5,7 @@ import jakarta.persistence.*
 @Entity
 @Table(
     name = "payer",
-    indexes = [Index(name = "idx_payer_name_enrollment_year", columnList = "name, enrollment_year")]
+    indexes = [Index(name = "idx_payer_enrollment_year_name", columnList = "enrollment_year DESC, name")]
 )
 class Payer(
     @Column(nullable = false)

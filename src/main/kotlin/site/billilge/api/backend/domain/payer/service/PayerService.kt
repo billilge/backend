@@ -65,10 +65,42 @@ class PayerService(
         val pageRequest = PageRequest.of(
             pageableCondition.pageNo,
             pageableCondition.size,
-            Sort.by(Sort.Direction.DESC, pageableCondition.criteria ?: "enrollmentYear")
-                .and(Sort.by(Sort.Direction.ASC, "id"))
+            resolveSort(pageableCondition.criteria)
         )
-        return payerRepository.findAllByNameContaining(searchCondition.search, pageRequest)
+        val search = searchCondition.search
+
+        // 검색어가 없으면 LIKE '%%'는 한 건도 걸러내지 못하면서 선행 와일드카드 때문에
+        // 인덱스 접근만 막는다. 목록 첫 진입이 이 경로이므로 술어 자체를 빼서
+        // 정렬 인덱스를 타고 LIMIT에서 끊게 한다.
+        if (search.isBlank()) {
+            return payerRepository.findAll(pageRequest)
+        }
+
+        return payerRepository.findAllByNameContaining(search, pageRequest)
+    }
+
+    /**
+     * 납부자 목록의 정렬 기준을 만드는 유일한 지점.
+     *
+     * 기본 정렬은 `idx_payer_enrollment_year_name(enrollment_year DESC, name)` 의 순서와 맞춘다.
+     * InnoDB 보조 인덱스는 뒤에 PK가 붙으므로 `id ASC` 까지 인덱스 순서로 읽을 수 있고,
+     * 정렬 키가 인덱스와 어긋나면 조건에 걸린 전체 행을 filesort 하게 된다.
+     *
+     * criteria는 클라이언트가 넘기는 값이라 화이트리스트로 받는다. 선언형 @Query에는
+     * 프로퍼티명이 검증 없이 그대로 붙어서, 없는 이름이 들어오면 쿼리 자체가 깨진다.
+     */
+    private fun resolveSort(criteria: String?): Sort = when (criteria) {
+        "name" -> Sort.by(
+            Sort.Order.asc("name"),
+            Sort.Order.desc("enrollmentYear"),
+            Sort.Order.asc("id")
+        )
+
+        else -> Sort.by(
+            Sort.Order.desc("enrollmentYear"),
+            Sort.Order.asc("name"),
+            Sort.Order.asc("id")
+        )
     }
 
     @Transactional
