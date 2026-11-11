@@ -162,7 +162,7 @@ Repository  ── Spring Data JPA, QueryDSL 기반 데이터 접근
 | Database           | **MySQL**, HikariCP / 테스트용 H2                                      |
 | Security           | Spring Security, Google OAuth2, JWT                                |
 | Messaging          | Firebase Cloud Messaging, Spring Application Event, `@Async`, 스케줄러 |
-| File Storage       | **MinIO** (기존 AWS S3에서 이전)                                         |
+| File Storage       | **Cloudflare R2** (AWS S3 → MinIO → R2 이전)                             |
 | Documentation      | Springdoc OpenAPI / Swagger UI                                     |
 | Build &amp; Deploy | Gradle Kotlin DSL, Docker, Docker Hub, GitHub Actions, Coolify     |
 | Logging            | Kotlin Logging, Logback AsyncAppender                              |
@@ -182,7 +182,7 @@ GitHub push (develop / main)
 
 ## 6. 실행 방법
 
-**요구 환경:** JDK 21, MySQL, MinIO, Google OAuth2 및 Firebase 자격증명.
+**요구 환경:** JDK 21, MySQL, Cloudflare R2, Google OAuth2 및 Firebase 자격증명.
 
 ```bash
 # 프로젝트 클론
@@ -196,7 +196,7 @@ cd backend
 profile=dev ./gradlew bootRun
 ```
 
-주요 환경변수는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_ISSUER`, `OAUTH2_GOOGLE_CLIENT_ID`, `OAUTH2_GOOGLE_CLIENT_SECRET`, `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`, `MINIO_BASE_URL`, `CORS_ALLOWED_ORIGINS`, `SWAGGER_SERVER_BASE_URL`, `LOGIN_REDIRECT_URL`입니다. Firebase 서비스 계정 설정도 필요합니다. 실제 값은 저장소에 커밋하지 않습니다.
+주요 환경변수는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_ISSUER`, `OAUTH2_GOOGLE_CLIENT_ID`, `OAUTH2_GOOGLE_CLIENT_SECRET`, `R2_ENDPOINT`, `R2_ACCESS_KEY`, `R2_SECRET_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL`, `CORS_ALLOWED_ORIGINS`, `SWAGGER_SERVER_BASE_URL`, `LOGIN_REDIRECT_URL`입니다. Firebase 서비스 계정 설정도 필요합니다. 실제 값은 저장소에 커밋하지 않습니다.
 
 - API 명세: 앱 실행 후 `/swagger` (Swagger UI), `/api-docs` (OpenAPI JSON)
 - 자세한 프로파일 설정: [`application-dev.yml`](https://github.com/billilge/backend/blob/develop/src/main/resources/application-dev.yml)
