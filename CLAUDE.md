@@ -8,7 +8,7 @@
 - **JPA + QueryDSL** (MySQL)
 - **Spring Security** (JWT + Google OAuth2)
 - **Firebase Cloud Messaging** (푸시 알림)
-- **AWS S3** (이미지 업로드)
+- **Cloudflare R2** (이미지 업로드, AWS SDK v2 S3 호환 API)
 - **Apache POI** (Excel 생성)
 
 ## 빌드 & 실행
@@ -72,7 +72,7 @@ domain/{name}/
 ## 서비스 의존성
 
 ```
-ItemService            → ItemRepository, S3Service
+ItemService            → ItemRepository, FileStorageService(R2Service)
 MemberService          → MemberRepository, TokenProvider, PayerService
 NotificationService           → NotificationRepository, NotificationPushOutboxService
 NotificationPushOutboxService → NotificationPushOutboxRepository
@@ -223,7 +223,7 @@ global/
 ├── exception/      # ApiException, ErrorCode, GlobalExceptionHandler
 ├── external/
 │   ├── fcm/        # FCMConfig, FCMService
-│   └── s3/         # S3Config, S3Service
+│   └── r2/         # R2Config, R2Service (FileStorageService 구현체)
 ├── logging/        # LoggingFilter
 ├── security/
 │   ├── jwt/        # TokenProvider, TokenAuthenticationFilter
